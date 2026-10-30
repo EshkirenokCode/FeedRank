@@ -1,0 +1,31 @@
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r requirements.lock
+      - run: pip install -e . --no-deps
+      - run: ruff check feedrank tests scripts
+      - run: ruff format --check feedrank tests scripts
+      - run: pytest -q
+      - run: python scripts/smoke.py
+      - run: npm ci && npm run build
+        working-directory: frontend
+      - run: docker compose up --build -d --wait
+      - run: python scripts/http_smoke.py http://127.0.0.1:8080
+      - if: always()
+        run: docker compose logs && docker compose down
