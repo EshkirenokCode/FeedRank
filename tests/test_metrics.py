@@ -38,3 +38,31 @@ def test_temporal_groups_and_timestamp_ties():
     assert max(r["time"] for r in a) < min(r["time"] for r in b)
     assert max(r["time"] for r in b) < min(r["time"] for r in c)
     assert not ({r["id"] for r in a} & {r["id"] for r in b})
+
+
+def test_catalog_replay_does_not_insert_missed_positive():
+    from types import SimpleNamespace
+
+    from feedrank.evaluate import catalog_replay
+
+    row = {
+        "id": "r",
+        "time": "2019-11-02",
+        "user": "u",
+        "history": [],
+        "items": ["new"],
+        "labels": [1],
+    }
+    earlier = {"time": "2019-11-01", "history": ["old"], "items": ["old"], "labels": [0]}
+    fake = SimpleNamespace(
+        splits={"A_fit": [earlier], "C": [row]},
+        index={"old": 0, "new": 1},
+        vectors=np.array([[1.0, 0.0], [0.0, 1.0]]),
+    )
+    fake.user_features = lambda rows: (np.array([[0]]), np.array([[0]]), np.array([[1.0, 0.0]]))
+    fake.group_features = lambda r, h, c, u: np.zeros((len(r["items"]), 5))
+    fake.rank = lambda x: np.zeros(len(x))
+    result = catalog_replay(fake, "C")
+    assert result["recall50"] == 0
+    assert result["pipeline_ndcg10"] == 0
+    assert result["unavailable_positive_count"] == 1

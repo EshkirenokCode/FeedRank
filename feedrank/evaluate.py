@@ -1,11 +1,12 @@
 """One-shot holdout evaluation after C selection; never trains on holdout."""
 
+import json
 import time
 from collections import Counter
 
 import numpy as np
 
-from .data import REPORTS, write
+from .data import DATA, REPORTS, sha, write
 from .metrics import aggregate, bootstrap, metrics
 from .model import diversify
 from .train import ART, Research, seed
@@ -157,6 +158,15 @@ def main():
         raise SystemExit(
             "Holdout already evaluated. Use a new documented protocol for further tuning."
         )
+    training = json.loads((REPORTS / "training.json").read_text())
+    if training["provenance"] != {
+        "protocol": sha(REPORTS / "protocol.md"),
+        "prepared": sha(DATA / "prepared.json"),
+        "data_manifest": sha(REPORTS / "data-manifest.json"),
+    }:
+        raise SystemExit("Training data or protocol changed; refuse evaluation.")
+    if any(sha(ART / f) != digest for f, digest in training["artifacts"].items()):
+        raise SystemExit("Training artifacts changed; refuse evaluation.")
     start = time.perf_counter()
     research = Research().load()
     c = evaluate_split(research, "C")
@@ -170,6 +180,8 @@ def main():
     holdout = evaluate_split(research, "holdout")
     result = {
         "protocol": "v1",
+        "provenance": training["provenance"],
+        "artifacts": training["artifacts"] | {"selection.json": sha(ART / "selection.json")},
         "selected": selected,
         "C": c,
         "holdout": holdout,

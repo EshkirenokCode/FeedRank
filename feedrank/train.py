@@ -12,7 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
-from .data import DATA, REPORTS, ROOT, write
+from .data import DATA, REPORTS, ROOT, sha, write
 from .model import MAX_HISTORY, Preprocessor, TwoTower, encode, tokens
 
 ART = ROOT / "artifacts"
@@ -121,6 +121,11 @@ class Research:
 def train():
     seed()
     start = time.perf_counter()
+    provenance = {
+        "protocol": sha(REPORTS / "protocol.md"),
+        "prepared": sha(DATA / "prepared.json"),
+        "data_manifest": sha(REPORTS / "data-manifest.json"),
+    }
     research = Research()
     fitting_items = [research.items[i] for i in sorted(research.fit_ids) if i in research.items]
     prep = Preprocessor.fit(fitting_items)
@@ -167,6 +172,7 @@ def train():
                     "state_dict": model.state_dict(),
                     "version": "feedrank-v1",
                     "torch_version": str(torch.__version__),
+                    "provenance": provenance,
                 },
                 ART / "encoder.pt",
             )
@@ -230,6 +236,10 @@ def train():
         REPORTS / "training.json",
         {
             "seed": 42,
+            "provenance": provenance,
+            "artifacts": {
+                f: sha(ART / f) for f in ["encoder.pt", "ranker.json", "research-baselines.json"]
+            },
             "device": "cpu",
             "threads": 4,
             "platform": platform.platform(),

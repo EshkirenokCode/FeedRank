@@ -32,12 +32,13 @@ def download():
     manifest = {
         "parser": "mind-tsv-v1",
         "source": "https://msnews.github.io/",
+        "mirror_revision": "0f871bdfd1ac4029324a48722ec6d52d714ebf27",
         "license": "https://github.com/msnews/MIND/blob/master/MSR%20License_Data.pdf",
         "retrieved_utc": datetime.now(UTC).isoformat(),
         "files": {},
     }
     for split, suffix in [("train", "train"), ("holdout", "dev")]:
-        url = f"https://huggingface.co/datasets/yjw1029/MIND/resolve/main/MINDsmall_{suffix}.zip"
+        url = f"https://huggingface.co/datasets/yjw1029/MIND/resolve/0f871bdfd1ac4029324a48722ec6d52d714ebf27/MINDsmall_{suffix}.zip"
         archive = DATA / f"{split}.zip"
         if not archive.exists():
             tmp = archive.with_suffix(".part")
@@ -72,7 +73,7 @@ def news():
     duplicate = conflict = 0
     for split in ["train", "holdout"]:
         with open(DATA / split / "news.tsv") as f:
-            for row in csv.reader(f, delimiter="\t"):
+            for row in csv.reader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
                 if len(row) != 8:
                     raise ValueError("Expected eight news columns")
                 key, cat, sub, title, abstract = row[:5]
@@ -94,7 +95,7 @@ def news():
 def behaviors(split):
     result = []
     with open(DATA / split / "behaviors.tsv") as f:
-        for row in csv.reader(f, delimiter="\t"):
+        for row in csv.reader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
             if len(row) != 5:
                 raise ValueError("Expected five behavior columns")
             iid, user, ts, hist, raw = row

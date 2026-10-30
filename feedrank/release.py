@@ -13,6 +13,11 @@ def main():
     seed()
     if not (REPORTS / "metrics.json").exists():
         raise SystemExit("Run measured evaluation before building a research release.")
+    report = json.loads((REPORTS / "metrics.json").read_text())
+    if any(sha(ART / f) != digest for f, digest in report["artifacts"].items()):
+        raise SystemExit("Artifacts no longer match evaluation; refuse release.")
+    if report["provenance"]["protocol"] != sha(REPORTS / "protocol.md"):
+        raise SystemExit("Protocol changed after evaluation; refuse release.")
     research = Research().load()
     catalog = json.loads((ROOT / "catalog/demo.json").read_text())
     np.save(
@@ -28,7 +33,7 @@ def main():
     write(
         ART / "release.json",
         {
-            "model_version": "feedrank-v1",
+            "model_version": "feedrank-v1-" + sha(ART / "encoder.pt")[:12],
             "policy_version": "category-cap-v1",
             "selected": selection["selected"],
             "catalog_sha256": sha(ROOT / "catalog/demo.json"),

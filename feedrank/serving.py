@@ -31,6 +31,17 @@ class Service:
             return
         try:
             manifest = json.loads(manifest_path.read_text())
+            required = {
+                "encoder.pt",
+                "demo-vectors.npy",
+                "baselines.json",
+                "ranker.json",
+                "selection.json",
+            }
+            if set(manifest["files"]) != required:
+                raise ValueError("Incomplete release manifest")
+            if manifest["selected"] not in {"popular", "content", "tower", "ranker"}:
+                raise ValueError("Unknown serving method")
             for file, checksum in manifest["files"].items():
                 if Path(file).name != file or sha(self.artifacts / file) != checksum:
                     raise ValueError("Artifact checksum mismatch")
@@ -50,6 +61,14 @@ class Service:
             ):
                 raise ValueError("Encoder/vector snapshot mismatch")
             self.ranker = json.loads((self.artifacts / "ranker.json").read_text())
+            for key in ["mean", "scale", "coef"]:
+                array = np.asarray(self.ranker[key])
+                if array.shape != (5,) or not np.isfinite(array).all():
+                    raise ValueError("Invalid ranker features")
+            if np.any(np.asarray(self.ranker["scale"]) <= 0) or not np.isfinite(
+                self.ranker["intercept"]
+            ):
+                raise ValueError("Invalid ranker normalization")
             baseline = json.loads((self.artifacts / "baselines.json").read_text())
             self.tf = TfidfVectorizer(vocabulary=baseline["tfidf_vocab"], sublinear_tf=True)
             self.tf.fit([" ".join(self.prep.vocab)])
@@ -59,7 +78,7 @@ class Service:
             self.pop = np.full(len(self.items), self.prior)
             self.version, self.selected = manifest["model_version"], manifest["selected"]
             self.ready, self.reason = True, None
-        except (OSError, ValueError, KeyError, RuntimeError) as exc:
+        except (OSError, ValueError, KeyError, RuntimeError, TypeError, AttributeError) as exc:
             self.reason = f"Research release could not be loaded ({type(exc).__name__}). Demo fallback is active."
 
     def features(self, history, interests):
@@ -134,6 +153,10 @@ class Service:
             method, fallback = "content", self.reason
         elif mode == "personalized" and not history and not interests:
             method, fallback = "popular", "No history yet. A balanced catalog starts your session."
+        if mode == "personalized" and self.ready and method == "popular":
+            fallback = (
+                "Popularity was selected on validation. This mode currently uses that baseline."
+            )
         scores = self.scores(x, method)
         # Public items have no MIND item-level clicks: identical smoothed prior, never invented counts.
         retrieval_scores = x[:, 0] if method in ("tower", "ranker") else scores
