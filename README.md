@@ -8,6 +8,8 @@ The full training/evaluation pipeline passes an isolated synthetic integration r
 MIND research training and final benchmark evaluation require dataset access and have
 not run yet. No MIND quality numbers are claimed. See [evaluation status](reports/evaluation.md).
 
+![FeedRank reading interface](reports/screenshots/feed-desktop.png)
+
 ## Run locally
 
 Python 3.12 and Node 22 are recommended.

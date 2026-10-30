@@ -11,3 +11,6 @@ frontend/dist/
 artifacts/research*
 *.egg-info/
 frontend/tsconfig.tsbuildinfo
+.env
+.env.*
+!.env.example

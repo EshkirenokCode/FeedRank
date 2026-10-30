@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-30",
+  "origin": "http://127.0.0.1:8080",
+  "mode": "explicit demo fallback, research release absent",
+  "desktop_viewport": [
+    1366,
+    900
+  ],
+  "mobile_viewport": [
+    390,
+    844
+  ],
+  "checked": [
+    "interest selection",
+    "save and saved list",
+    "open complete demo text",
+    "hide and undo",
+    "reset clears saved reads and interests",
+    "rapid method changes retain final mode",
+    "evaluation displays unavailable results explicitly",
+    "mobile menu and empty saved state",
+    "mobile off-canvas navigation hidden from accessibility tree",
+    "no browser console warnings or errors"
+  ],
+  "sessions": "QA sessions, excluded from any visitor statistics",
+  "limitations": [
+    "No trained MIND release available for learned-mode browser QA",
+    "Public HTTPS not deployed"
+  ]
+}

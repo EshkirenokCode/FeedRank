@@ -69,6 +69,7 @@ def test_preferences_hide_undo_and_csrf(tmp_path):
         assert c.post("/api/events", json=event | {"position": 1}).status_code == 422
         assert c.get("/ready").status_code == 503
         assert c.get("/health").status_code == 200
+        assert c.post("/api/sessions", content="x" * 9000).status_code == 413
 
 
 def test_event_retry_concurrent_and_conflict(tmp_path):

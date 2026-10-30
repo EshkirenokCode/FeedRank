@@ -1,0 +1,13 @@
+{
+  "http_smoke": "passed",
+  "session_survives_api_restart": true,
+  "readiness": "503: research release absent, explicit fallback",
+  "public_https": "not deployed",
+  "platform": "Linux arm64 in isolated Colima feedrank profile",
+  "image": "sha256:569450f8367eea46a5edd3401a7ba9bf32da3bac053bd01686ae380a37726a39",
+  "user": "10001",
+  "read_only_root": true,
+  "memory_limit_bytes": 1073741824,
+  "cpu_limit": 1.0,
+  "health": "healthy"
+}

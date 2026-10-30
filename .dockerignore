@@ -9,3 +9,5 @@ frontend/dist
 .ruff_cache
 artifacts/research*
 outputs
+.env
+.env.*
