@@ -11,20 +11,25 @@
     844
   ],
   "checked": [
-    "interest selection",
-    "save and saved list",
-    "open complete demo text",
-    "hide and undo",
-    "reset clears saved reads and interests",
-    "rapid method changes retain final mode",
-    "evaluation displays unavailable results explicitly",
-    "mobile menu and empty saved state",
-    "mobile off-canvas navigation hidden from accessibility tree",
+    "top navigation between Discover, Saved and Evaluation",
+    "open a complete demo read in desktop reading pane",
+    "save directly from the reading pane and update navigation count",
+    "open saved read and remove from saved",
+    "choose interests and switch actual recommendation methods",
+    "hide and undo with original recommendation association",
+    "mobile dedicated reader and return to feed",
+    "reset clears interests, history and saved navigation count",
+    "empty saved list returns to Discover",
+    "rapid sort changes retain final requested mode",
+    "explicit content-based fallback label",
+    "evaluation accordion uses buttons and accurate research status",
+    "keyboard focus moves into reader and reset dialog",
     "no browser console warnings or errors"
   ],
   "sessions": "QA sessions, excluded from any visitor statistics",
   "limitations": [
-    "No trained MIND release available for learned-mode browser QA",
+    "Research model still absent; learned-mode QA requires the MIND release",
     "Public HTTPS not deployed"
-  ]
+  ],
+  "interface": "top navigation; reading queue and side reader; dedicated mobile reading view"
 }

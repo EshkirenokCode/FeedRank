@@ -10,6 +10,10 @@ not run yet. No MIND quality numbers are claimed. See [evaluation status](report
 
 ![FeedRank reading interface](reports/screenshots/feed-desktop.png)
 
+The desktop interface pairs a compact reading queue with an adjacent reader. On mobile,
+a read opens as a separate view with a return to the feed. Interests and sorting live
+above the queue; saved reads and evaluation use the top navigation.
+
 ## Run locally
 
 Python 3.12 and Node 22 are recommended.
