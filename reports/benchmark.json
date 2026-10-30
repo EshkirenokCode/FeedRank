@@ -1,0 +1,30 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14",
+  "batch_size": 1,
+  "catalog_items": 48,
+  "history_length": 5,
+  "threads": 2,
+  "warmup": 20,
+  "mode": "explicit-demo-fallback",
+  "content_and_user_features": {
+    "p50_ms": 0.06179092451930046,
+    "p95_ms": 0.06676873308606446,
+    "measurements": 300
+  },
+  "serving_without_storage": {
+    "p50_ms": 0.08687505032867193,
+    "p95_ms": 0.09226659894920886,
+    "measurements": 300
+  },
+  "research_stages": "Unavailable until a measured research release is installed.",
+  "http": {
+    "p50_ms": 1.6022494528442621,
+    "p95_ms": 2.05627644318156,
+    "measurements": 300,
+    "transport": "localhost TCP; one client; includes SQLite served logging",
+    "history_length": 0,
+    "warmup_per_session": 7
+  },
+  "process_rss_bytes": 282394624
+}

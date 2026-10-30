@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "dataset": "synthetic category-consistent fixture, not MIND",
+  "train_losses": [
+    0.14515743032097816,
+    0.13358185067772865,
+    0.11315007880330086
+  ],
+  "checks": [
+    "optimizer and minibatches",
+    "repeated CPU training checkpoint checksum matches",
+    "trained release loads in API and events change user vectors",
+    "checkpoint selection and reload",
+    "frozen B ranker",
+    "C selection before holdout",
+    "logged metrics and full-catalog miss accounting"
+  ]
+}

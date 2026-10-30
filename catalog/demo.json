@@ -1,0 +1,434 @@
+[
+  {
+    "id": "demo-001",
+    "category": "science",
+    "subcategory": "science",
+    "title": "A quieter way to watch the night sky",
+    "abstract": "A small observatory can learn a lot by recording the same patch of sky over many nights. Consistent measurements reveal changes that a single image misses.",
+    "body": "Start with a stable camera and a clear log of conditions. Compare images taken at the same hour. Clouds, moonlight and sensor temperature can all change a measurement. Repeated observations help separate those effects from a change in the sky.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-002",
+    "category": "science",
+    "subcategory": "science",
+    "title": "What a river sample can tell us",
+    "abstract": "Water carries traces of the landscape it crosses. Simple measurements of temperature, clarity and acidity can help a community understand a local river.",
+    "body": "Collect samples from the same locations and record recent rain. One unusual reading is a reason to investigate, rather than proof of a lasting trend. Good records make a small monitoring project useful over time.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-003",
+    "category": "science",
+    "subcategory": "science",
+    "title": "Why soil holds more than roots",
+    "abstract": "Healthy soil is a living network of minerals, fungi and tiny organisms. Its structure influences how a garden stores water and supports plants.",
+    "body": "Compare a covered patch with bare ground after rain. Watch how quickly water enters and how long the surface stays damp. Soil changes slowly, so repeat observations across seasons.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-004",
+    "category": "science",
+    "subcategory": "science",
+    "title": "Listening for birds in a city park",
+    "abstract": "An early walk can reveal a surprisingly rich soundscape. A repeatable route makes casual bird listening more useful.",
+    "body": "Choose a short route and record what you hear at fixed stops. Weather, time and background noise matter. Avoid disturbing nests and treat uncertain identifications as uncertain.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-005",
+    "category": "science",
+    "subcategory": "science",
+    "title": "A closer look at everyday materials",
+    "abstract": "Paper, glass and metal react differently to heat and moisture. A few careful observations explain why material choice matters in daily objects.",
+    "body": "Think about the job an object must do. A reusable container needs a safe seal as well as a durable wall. There is rarely one best material for every use.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-006",
+    "category": "science",
+    "subcategory": "science",
+    "title": "How a weather diary becomes data",
+    "abstract": "A notebook of local weather is a small scientific instrument. A clear method matters more than a long list of readings.",
+    "body": "Measure in the same place and at the same hour. Keep the sensor away from direct heat. Record missing readings honestly. A diary helps describe local conditions, but does not replace regional climate analysis.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-007",
+    "category": "health",
+    "subcategory": "health",
+    "title": "Making room for a daily walk",
+    "abstract": "A short walk can be easier to keep than an ambitious new routine. A familiar route and a regular time reduce the effort of getting started.",
+    "body": "Choose a comfortable distance and adjust it to your own needs. A walk can be a chance to notice your neighbourhood, call a friend or simply leave a screen behind. This is a general lifestyle note, not individual medical advice.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-008",
+    "category": "health",
+    "subcategory": "health",
+    "title": "Building a calmer evening routine",
+    "abstract": "A repeatable evening can make the end of a busy day feel less rushed. Small environmental changes are often easier than a strict schedule.",
+    "body": "Set aside a place for tomorrow\u2019s essentials. Lower unnecessary noise and leave time for a quiet activity. If sleep problems persist, seek advice from a qualified clinician.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-009",
+    "category": "health",
+    "subcategory": "health",
+    "title": "A useful pause between long meetings",
+    "abstract": "A brief break offers a chance to move, look away from the screen and reset attention. It does not need an elaborate routine.",
+    "body": "Stand or change position if comfortable. Look across the room, get some water and check the next meeting\u2019s purpose. Make breaks accessible to colleagues with different mobility needs.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-010",
+    "category": "health",
+    "subcategory": "health",
+    "title": "Cooking a simple lunch ahead",
+    "abstract": "A flexible lunch plan can reduce daily decisions. A grain, some vegetables and a familiar protein source form a useful starting point.",
+    "body": "Use ingredients you enjoy and can store safely. Keep chilled food cold and follow package guidance. Adapt meals to allergies and individual dietary needs.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-011",
+    "category": "health",
+    "subcategory": "health",
+    "title": "Designing a desk around comfort",
+    "abstract": "A comfortable workspace leaves room to change position. Screen height, lighting and easy access to frequently used objects all matter.",
+    "body": "Try one adjustment at a time and notice how it feels over a full day. An expensive chair cannot replace breaks. Persistent pain deserves professional assessment.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-012",
+    "category": "health",
+    "subcategory": "health",
+    "title": "Keeping a useful habit record",
+    "abstract": "A habit log works best when it is easy to maintain. Recording a small action can reveal patterns without turning every day into a score.",
+    "body": "Write down what happened and what made it easier or harder. Review a week at a time. Leave room for illness, travel and ordinary changes in energy.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-013",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "Reading a household budget clearly",
+    "abstract": "A budget is a view of choices and obligations. Separating regular bills from irregular costs can make the next month easier to understand.",
+    "body": "List expected income and necessary costs first. Reserve space for expenses that occur only a few times a year. Estimates are useful when labelled clearly. This is an educational example, not financial advice.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-014",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "The hidden cost of a small subscription",
+    "abstract": "Several modest recurring charges can become difficult to track. A periodic review helps connect each payment with a service that is still useful.",
+    "body": "Check renewal dates and cancellation terms. Include annual plans in a monthly view. Keep services because they are useful, rather than because cancelling feels inconvenient.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-015",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "Why a price comparison needs context",
+    "abstract": "The lowest price can hide different delivery costs, sizes or repair options. A fair comparison starts with the same unit and the same use case.",
+    "body": "Compare total cost, expected use and the return policy. A durable item may cost more initially. That does not make it automatically better for every household.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-016",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "Making an irregular expense calendar",
+    "abstract": "Annual bills and occasional repairs can disrupt an otherwise steady budget. A calendar makes those costs visible before they arrive.",
+    "body": "Start with last year\u2019s known dates. Mark estimates and leave room for uncertainty. Review the calendar when circumstances change, rather than assuming the plan is fixed.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-017",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "Understanding a savings goal",
+    "abstract": "A clear goal has an amount, a date and a reason. Those three details make it easier to see whether a plan is realistic.",
+    "body": "Break the amount into manageable intervals and consider possible interruptions. Keep emergency needs separate. No particular investment product is recommended here.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-018",
+    "category": "finance",
+    "subcategory": "finance",
+    "title": "A receipt can be a useful record",
+    "abstract": "A simple record of larger purchases helps with warranties, returns and household planning. It need not become a complicated accounting system.",
+    "body": "Store the date, seller and warranty information where you can find them. Avoid keeping unnecessary personal information in shared folders. Review records when the item leaves your household.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-019",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "What makes a local running route work",
+    "abstract": "A good route balances distance, surface and safe crossings. Familiar loops can make a regular run easier to plan.",
+    "body": "Check lighting and access before setting out. Leave room to shorten the route and adapt pace to conditions. A route shared with walkers works best when everyone has space.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-020",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "Watching a match beyond the score",
+    "abstract": "Movement away from the ball often explains how a team creates space. Watching one player for a few minutes can reveal that pattern.",
+    "body": "Notice where teammates move when possession changes. Compare a sequence that creates an opening with one that stalls. A single match is too small a sample for sweeping conclusions.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-021",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "A beginner\u2019s guide to a cycling loop",
+    "abstract": "A short cycling loop gives new riders a manageable way to learn local roads. The return journey matters as much as the outward route.",
+    "body": "Check the bike, weather and road rules. Pick a route suited to your confidence and leave time for stops. A helmet and visible clothing are useful parts of preparation.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-022",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "Why teams review ordinary plays",
+    "abstract": "A routine sequence can contain a useful lesson about communication. Reviewing a few clear moments is often more useful than replaying every error.",
+    "body": "Agree on the question before watching a recording. Describe what happened without assigning motives. Choose one change the team can try in its next practice.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-023",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "Finding space for a community game",
+    "abstract": "A shared court or field needs more than a booking. Clear times, simple rules and room for newcomers make a community game easier to join.",
+    "body": "Explain the level and equipment needed in advance. Offer a way to rotate fairly. A welcoming game gives people a reason to return without needing a formal league.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-024",
+    "category": "sports",
+    "subcategory": "sports",
+    "title": "Keeping an honest training log",
+    "abstract": "A useful log records effort and recovery as well as distance or weight. Context can explain why two sessions with the same numbers feel different.",
+    "body": "Record only a few measures consistently. Include rest days and note unusual conditions. A log supports reflection; it is not a substitute for qualified coaching or medical care.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-025",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "A flexible soup for a quiet evening",
+    "abstract": "Soup is a forgiving way to use a few vegetables and a simple stock. Texture and seasoning can be adjusted near the end.",
+    "body": "Cook firm vegetables first, then add softer ingredients. Taste before adding more salt. Cool leftovers promptly and store them according to food safety guidance.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-026",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "Getting to know a local market",
+    "abstract": "A market visit can begin with one seasonal ingredient. Asking how a seller uses it often offers a practical starting point.",
+    "body": "Walk around before buying. Compare freshness, quantity and how soon you will cook. A small purchase is a good way to try an unfamiliar ingredient without waste.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-027",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "A better plan for leftover bread",
+    "abstract": "Bread changes texture before it becomes unusable. Toasts, crumbs and a simple savoury bake each suit a different stage.",
+    "body": "Freeze portions you will not use soon. Avoid bread with mould. Label stored portions so that a useful leftover does not become an unknown package.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-028",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "Why a recipe is also a sequence",
+    "abstract": "Good cooking instructions coordinate time as well as ingredients. Reading the whole recipe first can prevent a rushed final step.",
+    "body": "Find the longest task and start there. Prepare tools and measure ingredients before heating a pan. Note changes for next time instead of relying on memory.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-029",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "An easy way to compare coffee",
+    "abstract": "A consistent brewing method makes differences between coffees easier to notice. Change one variable at a time.",
+    "body": "Use the same water, cup and amount of coffee. Write a few plain words about aroma and taste. Your own preference is more useful than a complicated tasting vocabulary.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-030",
+    "category": "foodanddrink",
+    "subcategory": "foodanddrink",
+    "title": "Making a shared meal easier",
+    "abstract": "A shared meal works best when dietary needs and timing are clear. A modest menu leaves more room for conversation.",
+    "body": "Ask about allergies in advance. Choose dishes that can wait a little without losing their texture. Keep a simple option available for guests with different needs.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-031",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "Seeing a familiar city on foot",
+    "abstract": "A walk through a different neighbourhood can feel like a small journey. A loose theme gives the route a shape without filling every minute.",
+    "body": "Look for public gardens, old shopfronts or a river path. Check opening hours before relying on a destination. Leave room to change the route when something catches your attention.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-032",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "Packing for a short train journey",
+    "abstract": "A small bag is easier to manage when the essentials are easy to reach. A clear plan for tickets, water and a charger prevents repeated unpacking.",
+    "body": "Check luggage rules and keep important documents secure. Pack for the expected weather and a modest delay. Avoid carrying items you are unlikely to use.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-033",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "A slower day at a coastal town",
+    "abstract": "A quieter visit can centre on a walk, a local meal and time near the water. Fewer stops leave room to understand a place.",
+    "body": "Check tides, access rules and transport before leaving. Respect residents and protected areas. A beach is a shared environment, not simply a backdrop for a photograph.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-034",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "Choosing a museum with time to spare",
+    "abstract": "One well-chosen museum can be more memorable than a rushed list. A short visit with a clear interest is often enough.",
+    "body": "Choose a room or collection that matters to you. Check accessibility and ticket arrangements. Leave time to sit and look closely at a few objects.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-035",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "Keeping a useful travel notebook",
+    "abstract": "A short note about a route or a meal can preserve details that photographs miss. A notebook can also help the next visit.",
+    "body": "Record practical details alongside impressions. Keep private addresses and personal documents out of shared notes. Dates help distinguish a useful memory from current advice.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-036",
+    "category": "travel",
+    "subcategory": "travel",
+    "title": "A weekend closer to home",
+    "abstract": "A nearby destination reduces travel time and makes a short break easier to arrange. Familiar transport can leave more energy for the visit itself.",
+    "body": "Choose one main activity and check the return journey. Consider weather alternatives. A good weekend does not need a long distance or an expensive itinerary.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-037",
+    "category": "news",
+    "subcategory": "news",
+    "title": "How to read a local planning notice",
+    "abstract": "A planning notice describes a proposal and the process for commenting on it. A clear reading separates what is proposed from what is already approved.",
+    "body": "Find the address, dates and reference number. Read the actual documents when available. A summary may omit details that matter to a particular neighbour.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-038",
+    "category": "news",
+    "subcategory": "news",
+    "title": "A library as a shared neighbourhood space",
+    "abstract": "Libraries offer room for reading, learning and meeting. Understanding how a branch is used can help a community discuss its future.",
+    "body": "Look at access, opening hours and the range of activities. Listen to people who use the space differently. A busy room alone does not describe every form of value.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-039",
+    "category": "news",
+    "subcategory": "news",
+    "title": "Making sense of a public meeting agenda",
+    "abstract": "An agenda reveals which decisions a meeting may address. Reading it ahead of time makes a long discussion easier to follow.",
+    "body": "Mark items relevant to you and check whether public comments are invited. Distinguish a discussion item from a final vote. Follow up with the published minutes.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-040",
+    "category": "news",
+    "subcategory": "news",
+    "title": "What a neighbourhood map leaves out",
+    "abstract": "Maps simplify a place. They can show roads clearly while missing steps, shade or a difficult crossing.",
+    "body": "Walk a route and compare it with the map. Note access barriers and temporary closures. Local observations can improve a route, but should not expose private information.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-041",
+    "category": "news",
+    "subcategory": "news",
+    "title": "A careful way to compare public claims",
+    "abstract": "A useful comparison begins with the exact claim and its source. Dates and definitions often explain why two figures appear to disagree.",
+    "body": "Check whether the figures describe the same place and period. Look for the original document and any later corrections. Keep uncertainty visible when the evidence is incomplete.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-042",
+    "category": "news",
+    "subcategory": "news",
+    "title": "Small repairs in shared public spaces",
+    "abstract": "A broken bench or missing sign can change how a space is used. A clear report makes a small problem easier to locate and address.",
+    "body": "Use the appropriate local reporting channel and describe the location precisely. Avoid photographing bystanders unnecessarily. Keep a record of the report without assuming an immediate repair.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-043",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "A shelf that is easier to use",
+    "abstract": "Storage works when everyday objects are easy to find and return. A modest rearrangement can be more useful than buying more containers.",
+    "body": "Start with one shelf and group objects by use. Keep frequently used items within comfortable reach. Leave some empty space so the system can change.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-044",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "Making a small room feel calmer",
+    "abstract": "A clear walking path and a few useful surfaces can improve a small room. Light and proportion matter more than filling every corner.",
+    "body": "Move one object at a time and notice the effect during daily use. Keep safety and access in mind. A room should work for the people who live in it.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-045",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "A simple repair before replacing a bag",
+    "abstract": "A loose seam or worn strap does not always mean a bag is finished. A small repair can extend its useful life.",
+    "body": "Check the material and the load the repair must support. Start with a modest job and use appropriate tools. For a structural repair, an experienced repair shop may be the better option.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-046",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "Finding a place for a quiet hobby",
+    "abstract": "A hobby is easier to return to when the tools are ready. A small dedicated space can reduce the effort of beginning.",
+    "body": "Choose a project that fits the time you have. Store sharp or messy tools safely. Enjoyment does not need to become a measure of productivity.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-047",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "Organising a useful photo collection",
+    "abstract": "A few clear folders and a backup can make family photographs easier to find. A simple system is easier to maintain than a perfect one.",
+    "body": "Begin with recent images and remove accidental duplicates carefully. Keep originals when editing. Ask before sharing images of other people.",
+    "source": "FeedRank demo collection"
+  },
+  {
+    "id": "demo-048",
+    "category": "lifestyle",
+    "subcategory": "lifestyle",
+    "title": "A welcoming corner for a houseplant",
+    "abstract": "A plant\u2019s position should match its light and space needs. Observing one plant closely is a practical way to learn.",
+    "body": "Check the care guidance for the species and keep unsuitable plants away from pets or children. Change watering with conditions. A fixed weekly schedule may not suit every season.",
+    "source": "FeedRank demo collection"
+  }
+]
