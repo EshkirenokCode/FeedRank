@@ -10,9 +10,10 @@ not run yet. No MIND quality numbers are claimed. See [evaluation status](report
 
 ![FeedRank reading interface](reports/screenshots/feed-desktop.png)
 
-The desktop interface pairs a compact reading queue with an adjacent reader. On mobile,
-a read opens as a separate view with a return to the feed. Interests and sorting live
-above the queue; saved reads and evaluation use the top navigation.
+The interface uses a single reading feed on every screen size. Articles open in a
+separate reading view, with a return to the feed or saved list. Recommendation mode,
+interests and session reset are grouped in Settings. The evaluation explanation is
+available through the link below the feed.
 
 ## Run locally
 

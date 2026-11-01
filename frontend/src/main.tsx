@@ -6,12 +6,7 @@ import {
   ArrowLeft,
   Bookmark,
   X,
-  EyeOff,
   SlidersHorizontal,
-  RotateCcw,
-  Check,
-  Plus,
-  Minus,
 } from "lucide-react";
 import "./style.css";
 
@@ -93,10 +88,9 @@ function App() {
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
   const [reading, setReading] = useState<Read | null>(null);
-  const [mobileReader, setMobileReader] = useState(false);
+  const [readerOpen, setReaderOpen] = useState(false);
   const [topicsOpen, setTopicsOpen] = useState(false);
   const [resetDialog, setResetDialog] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>("protocol");
   const [toast, setToast] = useState<{
     text: string;
     item?: Item;
@@ -202,8 +196,8 @@ function App() {
     };
   }, [resetDialog]);
   useEffect(() => {
-    if (mobileReader) readerRef.current?.focus();
-  }, [mobileReader]);
+    if (readerOpen) readerRef.current?.focus();
+  }, [readerOpen]);
   async function preferences(cat: string) {
     if (busy) return;
     setBusy(true);
@@ -248,7 +242,7 @@ function App() {
       }
       if (type === "open") {
         setReading({ item, rid, opened: true });
-        setMobileReader(true);
+        setReaderOpen(true);
       }
       if (type === "save")
         setSavedIds((ids) => [...new Set([...ids, item.id])]);
@@ -281,7 +275,7 @@ function App() {
       setSavedIds([]);
       setSaved([]);
       setReading(null);
-      setMobileReader(false);
+      setReaderOpen(false);
       setToast(null);
       setResetDialog(false);
       setRevision((v) => v + 1);
@@ -292,150 +286,143 @@ function App() {
     }
   }
   function navigate(next: Page) {
+    requestAnimationFrame(() => {
+      document.getElementById("main")?.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    });
     setPage(next);
     setReading(null);
-    setMobileReader(false);
+    setReaderOpen(false);
     setTopicsOpen(false);
     setError("");
   }
   const rows = page === "Saved" ? saved : feed?.items || [];
-  const lead =
-    reading ||
-    (rows[0]
-      ? {
-          item: rows[0],
-          rid: rows[0].recommendation_id || feed?.recommendation_id || "",
-          opened: false,
-        }
-      : null);
-  const isSaved = lead ? savedIds.includes(lead.item.id) : false;
+  const activeMode = feed?.fallback
+    ? feed.method === "content"
+      ? "Content-based fallback"
+      : feed.method === "popular"
+        ? "Popular fallback"
+        : modeNames[mode]
+    : modeNames[mode];
+  function backToList() {
+    setReaderOpen(false);
+    requestAnimationFrame(() => document.getElementById("main")?.focus());
+  }
   return (
-    <div className="shell">
-      <a href="#main" className="skip">
+    <div className="application">
+      <a className="skip" href="#main">
         Skip to content
       </a>
-      <header className="masthead">
-        <button
-          className="wordmark"
-          onClick={() => navigate("Discover")}
-          aria-label="FeedRank home"
-        >
-          feedrank
-          <span className="brand-square" />
-        </button>
-        <nav aria-label="Main navigation">
-          {(["Discover", "Saved", "Evaluation"] as Page[]).map((p) => (
+      <header className="app-header">
+        <div className="header-content">
+          <button
+            className="brand"
+            aria-label="FeedRank home"
+            onClick={() => navigate("Discover")}
+          >
+            FeedRank
+          </button>
+          <nav aria-label="Main navigation">
             <button
-              key={p}
-              className={page === p ? "nav-link current" : "nav-link"}
-              aria-current={page === p ? "page" : undefined}
-              onClick={() => navigate(p)}
+              aria-current={page === "Discover" ? "page" : undefined}
+              onClick={() => navigate("Discover")}
             >
-              {p}
-              {p === "Saved" && savedIds.length > 0 && (
-                <span className="nav-count">{savedIds.length}</span>
-              )}
+              Feed
             </button>
-          ))}
-        </nav>
-        <button
-          className="session-reset"
-          onClick={() => setResetDialog(true)}
-          aria-label="Reset session"
-        >
-          <RotateCcw size={14} />
-          <span>Reset session</span>
-        </button>
+            <button
+              aria-current={page === "Saved" ? "page" : undefined}
+              onClick={() => navigate("Saved")}
+            >
+              Saved{savedIds.length > 0 && <span>{savedIds.length}</span>}
+            </button>
+          </nav>
+          <button
+            className="settings-button"
+            aria-label="Settings"
+            aria-expanded={topicsOpen}
+            aria-controls="feed-settings"
+            onClick={() => setTopicsOpen(!topicsOpen)}
+          >
+            <SlidersHorizontal size={16} />
+            <span>Settings</span>
+          </button>
+        </div>
       </header>
       <main
         id="main"
-        className={mobileReader ? "main reader-visible" : "main"}
         tabIndex={-1}
+        className={
+          readerOpen && reading ? "content reading-content" : "content"
+        }
       >
-        <div className="page-top">
-          <div className="page-title">
-            <h1>
-              {page === "Discover"
-                ? "Discover."
-                : page === "Saved"
-                  ? "Saved."
-                  : "Evaluation."}
-            </h1>
-            <span>
-              {page === "Discover"
-                ? "48 demo reads across eight subjects."
-                : page === "Saved"
-                  ? "Keep something for later."
-                  : "Methods, results and limitations."}
-            </span>
-          </div>
-          {page === "Discover" && (
-            <div className="feed-controls">
-              <div className="select-field">
-                <label htmlFor="method">Sort by</label>
+        {topicsOpen && (
+          <section
+            className="settings"
+            id="feed-settings"
+            aria-labelledby="settings-heading"
+          >
+            <div className="settings-top">
+              <h2 id="settings-heading">Feed settings</h2>
+              <button
+                aria-label="Close settings"
+                onClick={() => setTopicsOpen(false)}
+              >
+                <X size={17} />
+              </button>
+            </div>
+            <div className="settings-fields">
+              <div>
+                <label className="field-label" htmlFor="method">
+                  Recommendation method
+                </label>
                 <select
                   id="method"
                   value={mode}
                   onChange={(e) => setMode(e.target.value as Mode)}
                 >
-                  {Object.entries(modeNames).map(([key, name]) => (
-                    <option key={key} value={key}>
-                      {name}
+                  {Object.entries(modeNames).map(([id, label]) => (
+                    <option key={id} value={id}>
+                      {label}
                     </option>
                   ))}
                 </select>
+                <p>Changing the method updates the feed.</p>
               </div>
+              <fieldset>
+                <legend>Interests</legend>
+                <div className="interest-options">
+                  {categories.map((c) => (
+                    <label key={c}>
+                      <input
+                        type="checkbox"
+                        disabled={busy}
+                        checked={interests.includes(c)}
+                        onChange={() => preferences(c)}
+                      />
+                      {names[c] || c}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+            <div className="settings-bottom">
               <button
-                className={
-                  topicsOpen ? "interest-toggle is-open" : "interest-toggle"
-                }
-                onClick={() => setTopicsOpen(!topicsOpen)}
-                aria-expanded={topicsOpen}
-                aria-controls="topic-panel"
+                className="quiet-button"
+                onClick={() => setResetDialog(true)}
               >
-                <SlidersHorizontal size={16} />
-                Interests
-                {interests.length > 0 && <span>{interests.length}</span>}
+                Reset session
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => setTopicsOpen(false)}
+              >
+                Done
               </button>
             </div>
-          )}
-        </div>
-        {page === "Discover" && topicsOpen && (
-          <section
-            className="topic-panel"
-            id="topic-panel"
-            aria-label="Choose interests"
-          >
-            <div>
-              <h2>Choose your interests.</h2>
-              <p>
-                Pick the subjects you want more of. Leave all unchecked to
-                explore everything.
-              </p>
-            </div>
-            <div className="topic-options">
-              {categories.map((c) => (
-                <label key={c}>
-                  <input
-                    type="checkbox"
-                    checked={interests.includes(c)}
-                    disabled={busy}
-                    onChange={() => preferences(c)}
-                  />
-                  <span>{names[c] || c}</span>
-                </label>
-              ))}
-            </div>
-            <button
-              className="text-action"
-              onClick={() => setTopicsOpen(false)}
-            >
-              Done <Check size={15} />
-            </button>
           </section>
         )}
         {error && (
-          <div role="alert" className="error-line">
+          <div role="alert" className="error">
             <span>{error}</span>
             <button
               onClick={() =>
@@ -446,68 +433,189 @@ function App() {
             </button>
           </div>
         )}
-        {page === "Discover" && feed?.fallback && (
-          <div role="status" className="fallback-line">
-            <span>
-              {!feed.research_ready
-                ? "Research model unavailable. Content matching is active."
-                : feed.fallback}
-            </span>
-            <button onClick={() => navigate("Evaluation")}>
-              Details <ArrowUpRight size={12} />
+        {readerOpen && reading ? (
+          <article
+            className="full-read"
+            ref={readerRef}
+            tabIndex={-1}
+            aria-label="Article"
+          >
+            <div className="reader-toolbar">
+              <button onClick={backToList}>
+                <ArrowLeft size={16} />
+                Back to {page === "Saved" ? "saved" : "feed"}
+              </button>
+              <button
+                disabled={busy}
+                onClick={() =>
+                  event(
+                    reading.item,
+                    savedIds.includes(reading.item.id) ? "unsave" : "save",
+                    reading.rid,
+                  )
+                }
+              >
+                <Bookmark
+                  size={16}
+                  fill={
+                    savedIds.includes(reading.item.id) ? "currentColor" : "none"
+                  }
+                />
+                {savedIds.includes(reading.item.id) ? "Saved" : "Save"}
+              </button>
+            </div>
+            <header className="article-heading">
+              <span>
+                {names[reading.item.category] || reading.item.category}{" "}
+                <span className="separator">/</span> Demo collection
+              </span>
+              <h1>{reading.item.title}</h1>
+              <p>{reading.item.abstract}</p>
+            </header>
+            <div className="article-body">
+              <p>{reading.item.body}</p>
+            </div>
+            <div className="article-end">
+              <span>End of demo read</span>
+              <button onClick={backToList}>
+                Return to {page === "Saved" ? "saved" : "feed"}{" "}
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </article>
+        ) : page === "Evaluation" ? (
+          <section className="research-page">
+            <button className="back-link" onClick={() => navigate("Discover")}>
+              <ArrowLeft size={15} />
+              Back to feed
             </button>
-          </div>
-        )}
-        {page !== "Evaluation" && (
-          <div className="reading-layout">
-            <section
-              className="queue"
-              aria-label={
-                page === "Saved" ? "Saved reads" : "Recommended reads"
-              }
-              aria-busy={loading}
-            >
-              <div className="queue-caption">
-                <span>
-                  {page === "Saved"
-                    ? `${saved.length} saved ${saved.length === 1 ? "read" : "reads"}`
-                    : "Your next reads"}
-                </span>
-                <span>
-                  {loading
-                    ? "Updating…"
-                    : page === "Discover"
-                      ? feed?.fallback
-                        ? `${feed.method === "content" ? "Content-based" : feed.method === "popular" ? "Popular" : modeNames[mode]} fallback`
-                        : `${modeNames[mode]} order`
-                      : ""}
-                </span>
-              </div>
-              {!started || (loading && !rows.length) ? (
-                <div className="loading-state" role="status">
-                  Loading your reads<span>…</span>
+            <h1>How recommendations work</h1>
+            <p className="research-intro">
+              The feed compares popularity, content matching and a learned
+              retrieval-and-ranking pipeline.
+            </p>
+            <section className="research-status">
+              <h2>Research evaluation</h2>
+              <p>
+                {evaluation?.status === "measured"
+                  ? "Official validation is used as the final holdout, not an official test. All logged candidates are kept."
+                  : "MIND benchmark training and evaluation are pending dataset access. The app currently uses a content-based fallback. No research scores are claimed."}
+              </p>
+            </section>
+            {evaluation?.holdout && (
+              <>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Method</th>
+                        <th>NDCG@10</th>
+                        <th>MRR</th>
+                        <th>AUC</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(evaluation.holdout).map(([name, m]) => (
+                        <tr key={name}>
+                          <th>{name.replaceAll("_", " ")}</th>
+                          {["ndcg10", "mrr", "auc"].map((k) => (
+                            <td key={k}>{m[k]?.mean?.toFixed(4) ?? "—"}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ) : rows.length ? (
-                rows.map((item, index) => {
+                <p className="note">
+                  {evaluation.groups?.toLocaleString()} groups. Selected on C:{" "}
+                  {evaluation.selected}.
+                </p>
+                {evaluation.ci && (
+                  <p className="note">
+                    Ranker minus content NDCG@10:{" "}
+                    {evaluation.ci.mean_difference.toFixed(4)}. User-cluster 95%
+                    interval:{" "}
+                    {evaluation.ci.ci95.map((v) => v.toFixed(4)).join(" to ")}.
+                  </p>
+                )}
+              </>
+            )}
+            <h2>Learning and evaluation use different time windows</h2>
+            <p>
+              Earlier data trains the content encoder. A later window trains the
+              ranker with that encoder frozen. Another window selects the
+              method. Official validation stays separate for the final check.
+            </p>
+            <h2>Your actions update your session</h2>
+            <p>
+              Opening and saving reads changes the history used for matching.
+              Hiding a read removes it from your feed. These actions update
+              features, not model weights. Each session is independent.
+            </p>
+            <h2>What the demo can show</h2>
+            <p>
+              The collection contains 48 original summaries. It is not a live
+              news service. Offline quality on MIND would not prove quality on
+              this collection, or establish gains in satisfaction or retention.
+            </p>
+            <a
+              className="source-link"
+              href="https://github.com/EshkirenokCode/FeedRank"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Code and evaluation protocol <ArrowUpRight size={14} />
+            </a>
+          </section>
+        ) : (
+          <section className="feed-page" aria-busy={loading}>
+            <div className="feed-heading">
+              <div>
+                <h1>{page === "Saved" ? "Saved reads" : "Your feed"}</h1>
+                <p>
+                  {page === "Saved"
+                    ? "Reads you kept for later."
+                    : interests.length
+                      ? interests.map((c) => names[c] || c).join(", ")
+                      : "All subjects"}
+                </p>
+              </div>
+              {page === "Discover" && (
+                <button
+                  className="feed-method"
+                  onClick={() => setTopicsOpen(!topicsOpen)}
+                >
+                  {activeMode}
+                  <SlidersHorizontal size={13} />
+                </button>
+              )}
+            </div>
+            {page === "Discover" && feed?.fallback && (
+              <p className="model-note">
+                {feed.research_ready
+                  ? feed.fallback
+                  : "Research model unavailable; content matching is active."}
+                <button onClick={() => navigate("Evaluation")}>
+                  About this
+                </button>
+              </p>
+            )}
+            {(loading && !rows.length) || !started ? (
+              <p className="loading" role="status">
+                Loading reads…
+              </p>
+            ) : rows.length ? (
+              <div className="feed-list">
+                {rows.map((item) => {
                   const rid =
                     item.recommendation_id || feed?.recommendation_id || "";
-                  const saved = savedIds.includes(item.id);
+                  const isSaved = savedIds.includes(item.id);
                   return (
-                    <article className="story-row" key={item.id}>
-                      <span className="story-number">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="story-copy">
-                        <div className="story-meta">
-                          <span>{names[item.category] || item.category}</span>
-                          {item.reason && (
-                            <span className="story-reason">
-                              {item.reason === "Balanced demo selection"
-                                ? "From the collection"
-                                : item.reason}
-                            </span>
-                          )}
-                        </div>
+                    <article className="feed-item" key={item.id}>
+                      <div className="item-category">
+                        {names[item.category] || item.category}
+                      </div>
+                      <div className="item-main">
                         <h2>
                           <button
                             disabled={busy || loading}
@@ -517,37 +625,40 @@ function App() {
                           </button>
                         </h2>
                         <p>{item.abstract}</p>
-                        <div className="story-actions">
-                          <button
-                            className="read-link"
-                            disabled={busy || loading}
-                            onClick={() => event(item, "open", rid)}
-                          >
-                            Read <ArrowRight size={14} />
-                          </button>
+                        <div className="item-bottom">
+                          <span>
+                            {item.reason === "Matches a selected interest"
+                              ? "Matches your interests"
+                              : item.reason === "Based on your reading history"
+                                ? "From your reading history"
+                                : "Demo collection"}
+                          </span>
                           <div>
                             <button
-                              className={saved ? "row-icon saved" : "row-icon"}
-                              title={saved ? "Remove from saved" : "Save read"}
-                              aria-label={`${saved ? "Unsave" : "Save"} ${item.title}`}
                               disabled={busy || loading}
+                              aria-label={`${isSaved ? "Unsave" : "Save"} ${item.title}`}
+                              className={
+                                isSaved ? "item-action is-saved" : "item-action"
+                              }
                               onClick={() =>
-                                event(item, saved ? "unsave" : "save", rid)
+                                event(item, isSaved ? "unsave" : "save", rid)
                               }
                             >
                               <Bookmark
-                                size={16}
-                                fill={saved ? "currentColor" : "none"}
+                                size={14}
+                                fill={isSaved ? "currentColor" : "none"}
                               />
+                              {isSaved ? "Saved" : "Save"}
                             </button>
                             {page === "Discover" && (
                               <button
-                                className="row-icon"
-                                aria-label={`Hide ${item.title}`}
                                 disabled={busy || loading}
+                                className="item-action"
+                                aria-label={`Hide ${item.title}`}
                                 onClick={() => event(item, "hide", rid)}
                               >
-                                <EyeOff size={16} />
+                                <X size={14} />
+                                Hide
                               </button>
                             )}
                           </div>
@@ -555,258 +666,49 @@ function App() {
                       </div>
                     </article>
                   );
-                })
-              ) : (
-                <div className="empty-state">
-                  <span className="empty-dash">—</span>
-                  <h2>
-                    {page === "Saved"
-                      ? "Your reading list is empty."
-                      : "You’ve reached the end."}
-                  </h2>
-                  <p>
-                    {page === "Saved"
-                      ? "Use the bookmark beside a read to keep it here."
-                      : "Reset your session to start again with this collection."}
-                  </p>
-                  <button
-                    className="solid-button"
-                    onClick={() =>
-                      page === "Saved"
-                        ? navigate("Discover")
-                        : setResetDialog(true)
-                    }
-                  >
-                    {page === "Saved" ? "Find a read" : "Start again"}
-                    <ArrowRight size={15} />
-                  </button>
-                </div>
-              )}
-            </section>
-            <aside
-              ref={readerRef}
-              tabIndex={-1}
-              className={lead?.opened ? "reader is-reading" : "reader"}
-              aria-label="Reading pane"
-            >
-              <button
-                className="reader-back"
-                onClick={() => setMobileReader(false)}
-              >
-                <ArrowLeft size={16} />
-                Back to the feed
-              </button>
-              {lead ? (
-                <>
-                  <div className="reader-label">
-                    <span>{lead.opened ? "NOW READING" : "READ NEXT"}</span>
-                    <span>
-                      {names[lead.item.category] || lead.item.category}
-                    </span>
-                  </div>
-                  <h2>{lead.item.title}</h2>
-                  <p className="reader-abstract">{lead.item.abstract}</p>
-                  {lead.opened ? (
-                    <>
-                      <div className="reader-rule" />
-                      <p className="reader-body">{lead.item.body}</p>
-                      <div className="reading-end">
-                        <span />
-                        End of demo read
-                      </div>
-                      <button
-                        className="reader-save"
-                        disabled={busy}
-                        onClick={() =>
-                          event(
-                            lead.item,
-                            isSaved ? "unsave" : "save",
-                            lead.rid,
-                          )
-                        }
-                      >
-                        <Bookmark
-                          size={16}
-                          fill={isSaved ? "currentColor" : "none"}
-                        />
-                        {isSaved ? "Saved. Remove?" : "Save for later"}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      className="solid-button"
-                      disabled={busy || loading}
-                      onClick={() => event(lead.item, "open", lead.rid)}
-                    >
-                      Open this read <ArrowUpRight size={17} />
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div className="reader-placeholder">
-                  <span className="placeholder-bracket">[ ]</span>
-                  <p>Select a read from the feed.</p>
-                </div>
-              )}
-              <div className="collection-note">
-                <span>THE COLLECTION</span>
-                <p>
-                  Original demo summaries.
-                  <br />
-                  Evergreen ideas, not live news.
-                </p>
-                <button onClick={() => navigate("Evaluation")}>
-                  About the recommendations <ArrowUpRight size={12} />
-                </button>
+                })}
               </div>
-            </aside>
-          </div>
-        )}
-        {page === "Evaluation" && (
-          <div className="evaluation-layout">
-            <section className="evaluation-main">
-              <div className="evaluation-summary">
-                <span className="section-label">RESEARCH STATUS</span>
+            ) : (
+              <div className="empty">
                 <h2>
-                  {evaluation?.status === "measured"
-                    ? "The results are in."
-                    : "Research evaluation pending."}
+                  {page === "Saved"
+                    ? "No saved reads"
+                    : "No more reads in this session"}
                 </h2>
                 <p>
-                  {evaluation?.status === "measured"
-                    ? "Complete logged candidate sets. Official validation is used as the final holdout, not an official test."
-                    : "The app works. The MIND benchmark still needs dataset access. Until then, there are no research quality scores to report."}
+                  {page === "Saved"
+                    ? "Use Save beside a read to keep it here."
+                    : "Reset the session to browse the collection again."}
                 </p>
+                <button
+                  className="primary-button"
+                  onClick={() =>
+                    page === "Saved"
+                      ? navigate("Discover")
+                      : setResetDialog(true)
+                  }
+                >
+                  {page === "Saved" ? "Back to feed" : "Reset session"}
+                </button>
               </div>
-              {evaluation?.holdout && (
-                <>
-                  <div className="table-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Method</th>
-                          <th>NDCG@10</th>
-                          <th>MRR</th>
-                          <th>AUC</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(evaluation.holdout).map(([name, m]) => (
-                          <tr key={name}>
-                            <th>{name.replaceAll("_", " ")}</th>
-                            {["ndcg10", "mrr", "auc"].map((k) => (
-                              <td key={k}>{m[k]?.mean?.toFixed(4) ?? "—"}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="evaluation-footnote">
-                    {evaluation.groups?.toLocaleString()} groups. Selected on C:{" "}
-                    {evaluation.selected}.
-                  </p>
-                  {evaluation.ci && (
-                    <p className="evaluation-footnote">
-                      Ranker minus content NDCG@10:{" "}
-                      {evaluation.ci.mean_difference.toFixed(4)}. User-cluster
-                      95% interval:{" "}
-                      {evaluation.ci.ci95.map((v) => v.toFixed(4)).join(" to ")}
-                      .
-                    </p>
-                  )}
-                </>
-              )}
-              {[
-                {
-                  id: "protocol",
-                  label: "01",
-                  title: "Separate learning from the final check",
-                  body: "Earlier data trains the content encoder. A later window trains the ranker with that encoder frozen. Another window selects the method. Official validation is reserved for the final holdout.",
-                },
-                {
-                  id: "methods",
-                  label: "02",
-                  title: "Compare against useful baselines",
-                  body: "Popularity and content matching are compared with the two-tower retriever, the separate ranker, and the final diversity policy. Every method sees the same logged candidates. A ranking score is not a click probability.",
-                },
-                {
-                  id: "limits",
-                  label: "03",
-                  title: "Know where the evidence stops",
-                  body: "Offline clicks do not establish gains in satisfaction or retention. Non-clicks do not prove dislike. The public collection uses original demo summaries; research quality would not establish transfer quality here.",
-                },
-                {
-                  id: "session",
-                  label: "04",
-                  title: "Your session changes the features",
-                  body: "Opening and saving reads updates your history. Hiding removes a read from the queue. These actions change session features, not the trained model weights. Sessions are separate and can be reset.",
-                },
-              ].map((section) => (
-                <section className="explanation" key={section.id}>
-                  <button
-                    aria-expanded={expanded === section.id}
-                    aria-controls={`section-${section.id}`}
-                    onClick={() =>
-                      setExpanded(expanded === section.id ? null : section.id)
-                    }
-                  >
-                    <span>{section.label}</span>
-                    <h3>{section.title}</h3>
-                    {expanded === section.id ? (
-                      <Minus size={18} />
-                    ) : (
-                      <Plus size={18} />
-                    )}
-                  </button>
-                  {expanded === section.id && (
-                    <p id={`section-${section.id}`}>{section.body}</p>
-                  )}
-                </section>
-              ))}
-            </section>
-            <aside className="evaluation-aside">
-              <span className="section-label">A SMALL, OPEN SYSTEM</span>
-              <h3>
-                Read the method.
-                <br />
-                Inspect the code.
-              </h3>
-              <p>
-                The protocol, training code, checks and current limitations are
-                in the repository.
-              </p>
-              <a
-                href="https://github.com/EshkirenokCode/FeedRank"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open repository <ArrowUpRight size={16} />
-              </a>
-              <div className="aside-divider" />
-              <span className="section-label">IN THIS DEMO</span>
-              <p>
-                48 original summaries.
-                <br />
-                Eight subjects.
-                <br />
-                One private session.
-              </p>
-            </aside>
-          </div>
+            )}
+          </section>
         )}
+        <footer className="app-footer">
+          <button onClick={() => navigate("Evaluation")}>
+            How recommendations work
+          </button>
+          <span aria-hidden="true">·</span>
+          <a
+            href="https://github.com/EshkirenokCode/FeedRank"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <span className="footer-description">Original demo content</span>
+        </footer>
       </main>
-      <footer className="site-footer">
-        <span>FeedRank / A recommendation study</span>
-        <span>Original demo content. No account required.</span>
-        <a
-          href="https://github.com/EshkirenokCode/FeedRank"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Source <ArrowUpRight size={12} />
-        </a>
-      </footer>
       {toast && (
         <div className="toast" role="status">
           <span>{toast.text}</span>
@@ -822,7 +724,7 @@ function App() {
             aria-label="Dismiss notification"
             onClick={() => setToast(null)}
           >
-            <X size={14} />
+            <X size={15} />
           </button>
         </div>
       )}
@@ -841,20 +743,26 @@ function App() {
               aria-label="Close dialog"
               onClick={() => setResetDialog(false)}
             >
-              <X size={20} />
+              <X size={19} />
             </button>
-            <span className="section-label">YOUR SESSION</span>
-            <h2 id="reset-title">Start fresh?</h2>
-            <p>This clears your interests, saved reads and reading history.</p>
+            <h2 id="reset-title">Reset this session?</h2>
+            <p>
+              Your interests, saved reads and reading history will be cleared.
+            </p>
+            {error && <p role="alert">{error}</p>}
             <div>
-              <button className="solid-button" disabled={busy} onClick={reset}>
-                Reset session <ArrowRight size={15} />
-              </button>
               <button
-                className="text-action"
+                className="quiet-button"
                 onClick={() => setResetDialog(false)}
               >
-                Keep my reads
+                Cancel
+              </button>
+              <button
+                className="primary-button"
+                disabled={busy}
+                onClick={reset}
+              >
+                Reset session
               </button>
             </div>
           </section>

@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-30",
+  "date": "2026-11-01",
   "origin": "http://127.0.0.1:8080",
   "mode": "explicit demo fallback, research release absent",
   "desktop_viewport": [
@@ -11,19 +11,18 @@
     844
   ],
   "checked": [
-    "top navigation between Discover, Saved and Evaluation",
-    "open a complete demo read in desktop reading pane",
-    "save directly from the reading pane and update navigation count",
-    "open saved read and remove from saved",
-    "choose interests and switch actual recommendation methods",
-    "hide and undo with original recommendation association",
-    "mobile dedicated reader and return to feed",
-    "reset clears interests, history and saved navigation count",
-    "empty saved list returns to Discover",
-    "rapid sort changes retain final requested mode",
-    "explicit content-based fallback label",
-    "evaluation accordion uses buttons and accurate research status",
-    "keyboard focus moves into reader and reset dialog",
+    "feed and saved are the primary navigation",
+    "article opens as the only main content on desktop and mobile",
+    "save in article updates saved list and navigation count",
+    "return from article to originating list",
+    "method, interests and reset grouped in Settings",
+    "mobile Settings button has an accessible name",
+    "interest changes and consecutive method changes use real API",
+    "hide and undo preserve recommendation association",
+    "reset clears saved list and interests",
+    "empty saved list returns to feed",
+    "research document link opens at top with main focus",
+    "explicit content fallback retained",
     "no browser console warnings or errors"
   ],
   "sessions": "QA sessions, excluded from any visitor statistics",
@@ -31,5 +30,5 @@
     "Research model still absent; learned-mode QA requires the MIND release",
     "Public HTTPS not deployed"
   ],
-  "interface": "top navigation; reading queue and side reader; dedicated mobile reading view"
+  "interface": "single reading feed; standalone article view on every screen; grouped settings; secondary research document"
 }
