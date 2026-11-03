@@ -108,3 +108,189 @@ def test_corrupted_manifest_fails_closed(tmp_path):
     service = Service(tmp_path)
     assert not service.ready
     assert "could not be loaded" in service.reason
+
+
+def test_unsave_restores_unread_but_keeps_opened_history(tmp_path):
+    with client(tmp_path) as c:
+        c.post("/api/sessions")
+        feed = c.get("/api/recommendations").json()
+        item = feed["items"][0]["id"]
+        event = {"item_id": item, "recommendation_id": feed["recommendation_id"]}
+        for event_id, kind in [("save-unread", "save"), ("undo-unread", "unsave")]:
+            c.post(
+                "/api/events", json=event | {"event_id": event_id, "event_type": kind}
+            ).raise_for_status()
+        assert item in [i["id"] for i in c.get("/api/recommendations").json()["items"]]
+        for event_id, kind in [
+            ("open-article", "open"),
+            ("save-opened", "save"),
+            ("undo-opened", "unsave"),
+        ]:
+            c.post(
+                "/api/events", json=event | {"event_id": event_id, "event_type": kind}
+            ).raise_for_status()
+        assert item not in [i["id"] for i in c.get("/api/recommendations").json()["items"]]
+        assert not c.get("/api/saved").json()["items"]
+
+
+def test_hidden_restore_read_reload_and_bounded_impressions(tmp_path):
+    with client(tmp_path) as c:
+        c.post("/api/sessions")
+        feed = c.get("/api/recommendations").json()
+        hidden, saved = [i["id"] for i in feed["items"][:2]]
+        for item, kind in [(hidden, "hide"), (saved, "save")]:
+            c.post(
+                "/api/events",
+                json={
+                    "event_id": f"persist-{kind}",
+                    "item_id": item,
+                    "event_type": kind,
+                    "recommendation_id": feed["recommendation_id"],
+                },
+            ).raise_for_status()
+        for n in range(220):
+            if n % 50 == 0:
+                c.app.state.rate.clear()
+            c.get("/api/recommendations").raise_for_status()
+        with sqlite3.connect(tmp_path / "db.sqlite") as db:
+            assert db.execute("SELECT count(*) FROM served").fetchone()[0] <= 200 * 12 + 48
+            before = db.execute("SELECT count(*) FROM events").fetchone()[0]
+        item = c.get(f"/api/items/{saved}").json()
+        assert item["id"] == saved
+        assert item["body"]
+        with sqlite3.connect(tmp_path / "db.sqlite") as db:
+            assert db.execute("SELECT count(*) FROM events").fetchone()[0] == before
+        h = c.get("/api/hidden").json()["items"][0]
+        assert h["id"] == hidden
+        c.post(
+            "/api/events",
+            json={
+                "event_id": "restore-hidden",
+                "item_id": hidden,
+                "event_type": "unhide",
+                "recommendation_id": h["recommendation_id"],
+            },
+        ).raise_for_status()
+        assert not c.get("/api/hidden").json()["items"]
+        assert hidden in [i["id"] for i in c.get("/api/recommendations").json()["items"]]
+        own_cookie = c.cookies.get("feedrank")
+        c.cookies.clear()
+        c.post("/api/sessions")
+        assert c.get(f"/api/items/{saved}").status_code == 404
+        c.cookies.set("feedrank", own_cookie)
+        c.delete("/api/session/history").raise_for_status()
+        assert c.get(f"/api/items/{saved}").status_code == 404
+
+
+def test_expired_session_can_restart_without_reusing_history(tmp_path):
+    with client(tmp_path) as c:
+        c.post("/api/sessions")
+        cookie = c.cookies.get("feedrank")
+        with sqlite3.connect(tmp_path / "db.sqlite") as db:
+            db.execute("UPDATE sessions SET updated=0")
+        assert c.get("/api/session").status_code == 401
+        c.post("/api/sessions").raise_for_status()
+        assert c.cookies.get("feedrank") != cookie
+        assert c.get("/api/session").json() == {"saved": [], "hidden": [], "interests": []}
+
+
+def test_docs_use_local_assets_and_a_per_request_script_nonce(tmp_path):
+    import re
+
+    with client(tmp_path) as c:
+        first, second = c.get("/docs"), c.get("/docs")
+        assert first.status_code == 200
+        nonce = re.search(r'<script nonce="([^"]+)"', first.text)[1]
+        assert f"'nonce-{nonce}'" in first.headers["content-security-policy"]
+        assert nonce not in second.text
+        assert "/api-docs/swagger-ui-bundle.js" in first.text
+        assert "cdn.jsdelivr.net" not in first.text
+        assert "'unsafe-inline'" not in c.get("/health").headers["content-security-policy"]
+
+
+def test_corrupt_checkpoint_and_partial_load_preserve_fallback(tmp_path):
+    import numpy as np
+    import torch
+
+    from feedrank.data import ROOT, sha
+    from feedrank.model import Preprocessor, TwoTower, encode
+
+    items = json.loads((ROOT / "catalog/demo.json").read_text())
+    prep = Preprocessor.fit(items)
+    model = TwoTower(len(prep.vocab), len(prep.categories) + 1, len(prep.subcategories) + 1).eval()
+    torch.save(
+        {"config": model.config, "preprocessing": prep.state(), "state_dict": model.state_dict()},
+        tmp_path / "encoder.pt",
+    )
+    np.save(tmp_path / "demo-vectors.npy", encode(model, prep.transform(items)))
+    (tmp_path / "ranker.json").write_text(
+        json.dumps({"mean": [0] * 5, "scale": [1] * 5, "coef": [0] * 5, "intercept": 0})
+    )
+    (tmp_path / "baselines.json").write_text(
+        json.dumps({"tfidf_vocab": {"river": 0}, "idf": [1.0], "prior": 0.0})
+    )
+    (tmp_path / "selection.json").write_text("{}")
+    files = ["encoder.pt", "demo-vectors.npy", "ranker.json", "baselines.json", "selection.json"]
+
+    def manifest():
+        (tmp_path / "release.json").write_text(
+            json.dumps(
+                {
+                    "files": {f: sha(tmp_path / f) for f in files},
+                    "selected": "ranker",
+                    "catalog_sha256": sha(ROOT / "catalog/demo.json"),
+                    "model_version": "test",
+                }
+            )
+        )
+
+    manifest()
+    loaded = Service(tmp_path)
+    clean = Service(tmp_path / "missing")
+    assert not loaded.ready
+    assert loaded.text.shape == clean.text.shape
+    np.testing.assert_allclose(loaded.features(["demo-001"], []), clean.features(["demo-001"], []))
+    assert not hasattr(loaded, "model")
+    (tmp_path / "encoder.pt").write_bytes(b"broken checkpoint")
+    manifest()
+    broken = Service(tmp_path)
+    assert not broken.ready
+    assert np.isfinite(
+        [i["score"] for i in broken.recommend([], [], set(), "personalized")["items"]]
+    ).all()
+
+
+def test_popular_mode_does_not_claim_interest_personalization(tmp_path):
+    service = Service(tmp_path)
+    result = service.recommend([], ["science"], set(), "popular")
+    assert all(i["reason"] == "Balanced demo selection" for i in result["items"])
+
+
+def test_legacy_hidden_impression_is_recovered_from_accepted_event(tmp_path):
+    with client(tmp_path) as c:
+        c.post("/api/sessions")
+        f = c.get("/api/recommendations").json()
+        item = f["items"][0]["id"]
+        c.post(
+            "/api/events",
+            json={
+                "event_id": "legacy-hide",
+                "event_type": "hide",
+                "item_id": item,
+                "recommendation_id": f["recommendation_id"],
+            },
+        ).raise_for_status()
+        with sqlite3.connect(tmp_path / "db.sqlite") as db:
+            db.execute("DELETE FROM served WHERE item=?", (item,))
+        restored = c.get("/api/hidden").json()["items"][0]
+        assert restored["recommendation_id"] == f["recommendation_id"]
+        c.post(
+            "/api/events",
+            json={
+                "event_id": "legacy-restore",
+                "event_type": "unhide",
+                "item_id": item,
+                "recommendation_id": restored["recommendation_id"],
+            },
+        ).raise_for_status()
+        assert not c.get("/api/hidden").json()["items"]

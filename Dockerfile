@@ -1,4 +1,5 @@
 FROM node:22-alpine AS web
+ENV SCARF_ANALYTICS=false
 WORKDIR /web
 COPY frontend/package*.json ./
 RUN npm ci

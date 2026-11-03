@@ -9,6 +9,13 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import "./style.css";
+import {
+  parseRoute,
+  routeHash,
+  initialMode,
+  type Page,
+  type Route,
+} from "./navigation";
 
 type Item = {
   id: string;
@@ -28,7 +35,6 @@ type Feed = {
   model_version: string;
 };
 type Mode = "popular" | "content" | "personalized";
-type Page = "Discover" | "Saved" | "Evaluation";
 type Metric = Record<string, { mean: number | null; groups: number }>;
 type Evaluation = {
   status: string;
@@ -55,6 +61,14 @@ const modeNames: Record<Mode, string> = {
   content: "Content-based",
   personalized: "Personalized",
 };
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+  }
+}
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -69,13 +83,24 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.detail || "Something went wrong. Please try again.");
+    const message =
+      typeof data.detail === "string"
+        ? data.detail
+        : "This request could not be processed.";
+    throw new ApiError(
+      response.status === 401
+        ? "Your session has expired. Start a new session to continue."
+        : message,
+      response.status,
+    );
   }
   return response.json();
 }
 function App() {
-  const [page, setPage] = useState<Page>("Discover");
-  const [mode, setMode] = useState<Mode>("personalized");
+  const [route, setRoute] = useState<Route>(() => parseRoute(location.hash));
+  const page = route.page;
+  const readerOpen = Boolean(route.itemId);
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [interests, setInterests] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [feed, setFeed] = useState<Feed | null>(null);
@@ -88,7 +113,9 @@ function App() {
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
   const [reading, setReading] = useState<Read | null>(null);
-  const [readerOpen, setReaderOpen] = useState(false);
+  const [hidden, setHidden] = useState<Item[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [topicsOpen, setTopicsOpen] = useState(false);
   const [resetDialog, setResetDialog] = useState(false);
   const [toast, setToast] = useState<{
@@ -101,6 +128,49 @@ function App() {
   const dialogClose = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const readerRef = useRef<HTMLElement>(null);
+  function reportError(cause: unknown) {
+    setError(cause instanceof Error ? cause.message : "Something went wrong.");
+    if (cause instanceof ApiError && cause.status === 401)
+      setSessionExpired(true);
+  }
+  function go(next: Route, replace = false) {
+    const state = {
+      feedrank: true,
+      readFrom: next.itemId ? next.page : undefined,
+    };
+    if (replace) history.replaceState(state, "", routeHash(next));
+    else if (location.hash !== routeHash(next))
+      history.pushState(state, "", routeHash(next));
+    setRoute(next);
+    setTopicsOpen(false);
+    setError("");
+  }
+  useEffect(() => {
+    const change = () => {
+      setRoute(parseRoute(location.hash));
+      setTopicsOpen(false);
+      setError("");
+    };
+    window.addEventListener("popstate", change);
+    window.addEventListener("hashchange", change);
+    return () => {
+      window.removeEventListener("popstate", change);
+      window.removeEventListener("hashchange", change);
+    };
+  }, []);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("feedrank-mode", mode);
+    } catch {
+      /* Optional preference. */
+    }
+  }, [mode]);
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      document.getElementById("main")?.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    });
+  }, [route.itemId, page]);
   useEffect(() => {
     let live = true;
     (async () => {
@@ -110,16 +180,17 @@ function App() {
         });
         const [info, state] = await Promise.all([
           api<{ categories: string[] }>("/api/catalog-info"),
-          api<{ saved: string[] }>("/api/session"),
+          api<{ saved: string[]; hidden: string[] }>("/api/session"),
         ]);
         if (live) {
           setInterests(session.interests);
           setCategories(info.categories);
           setSavedIds(state.saved);
+          setHiddenIds(state.hidden);
           setStarted(true);
         }
       } catch (e) {
-        if (live) setError((e as Error).message);
+        if (live) reportError(e);
       }
     })();
     return () => {
@@ -134,19 +205,31 @@ function App() {
     setError("");
     (async () => {
       try {
-        if (page === "Discover") {
+        if (route.itemId) {
+          const item = await api<Item>(`/api/items/${route.itemId}`, {
+            signal: control.signal,
+          });
+          if (n === generation.current)
+            setReading({ item, rid: item.recommendation_id!, opened: true });
+        } else if (page === "Discover") {
           const data = await api<Feed>(`/api/recommendations?mode=${mode}`, {
             signal: control.signal,
           });
           if (n === generation.current) setFeed(data);
         }
-        if (page === "Saved") {
+        if (!route.itemId && page === "Hidden") {
+          const data = await api<{ items: Item[] }>("/api/hidden", {
+            signal: control.signal,
+          });
+          if (n === generation.current) setHidden(data.items);
+        }
+        if (!route.itemId && page === "Saved") {
           const data = await api<{ items: Item[] }>("/api/saved", {
             signal: control.signal,
           });
           if (n === generation.current) setSaved(data.items);
         }
-        if (page === "Evaluation") {
+        if (!route.itemId && page === "Evaluation") {
           const data = await api<Evaluation>("/api/evaluation", {
             signal: control.signal,
           });
@@ -154,13 +237,13 @@ function App() {
         }
       } catch (e) {
         if ((e as Error).name !== "AbortError" && n === generation.current)
-          setError((e as Error).message);
+          reportError(e);
       } finally {
         if (n === generation.current) setLoading(false);
       }
     })();
     return () => control.abort();
-  }, [started, page, mode, revision]);
+  }, [started, page, mode, revision, route.itemId]);
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(null), 8000);
@@ -196,8 +279,9 @@ function App() {
     };
   }, [resetDialog]);
   useEffect(() => {
-    if (readerOpen) readerRef.current?.focus();
-  }, [readerOpen]);
+    if (readerOpen && reading?.item.id === route.itemId)
+      readerRef.current?.focus();
+  }, [readerOpen, reading?.item.id, route.itemId]);
   async function preferences(cat: string) {
     if (busy) return;
     setBusy(true);
@@ -213,7 +297,7 @@ function App() {
       setInterests(next);
       setRevision((v) => v + 1);
     } catch (e) {
-      setError((e as Error).message);
+      reportError(e);
     } finally {
       setBusy(false);
     }
@@ -242,8 +326,12 @@ function App() {
       }
       if (type === "open") {
         setReading({ item, rid, opened: true });
-        setReaderOpen(true);
+        go({ page, itemId: item.id });
       }
+      if (type === "hide")
+        setHiddenIds((ids) => [...new Set([...ids, item.id])]);
+      if (type === "unhide")
+        setHiddenIds((ids) => ids.filter((id) => id !== item.id));
       if (type === "save")
         setSavedIds((ids) => [...new Set([...ids, item.id])]);
       if (type === "unsave")
@@ -261,7 +349,7 @@ function App() {
         });
       setRevision((v) => v + 1);
     } catch (e) {
-      setError((e as Error).message);
+      reportError(e);
     } finally {
       setBusy(false);
     }
@@ -274,29 +362,51 @@ function App() {
       setInterests([]);
       setSavedIds([]);
       setSaved([]);
+      setHidden([]);
+      setHiddenIds([]);
       setReading(null);
-      setReaderOpen(false);
+      go({ page: "Discover" }, true);
       setToast(null);
       setResetDialog(false);
       setRevision((v) => v + 1);
     } catch (e) {
-      setError((e as Error).message);
+      reportError(e);
     } finally {
       setBusy(false);
     }
   }
   function navigate(next: Page) {
-    requestAnimationFrame(() => {
-      document.getElementById("main")?.focus({ preventScroll: true });
-      window.scrollTo(0, 0);
-    });
-    setPage(next);
-    setReading(null);
-    setReaderOpen(false);
-    setTopicsOpen(false);
-    setError("");
+    go({ page: next });
   }
-  const rows = page === "Saved" ? saved : feed?.items || [];
+  async function restartSession() {
+    setBusy(true);
+    try {
+      ++generation.current;
+      await api("/api/sessions", { method: "POST" });
+      const state = await api<{
+        saved: string[];
+        hidden: string[];
+        interests: string[];
+      }>("/api/session");
+      setInterests(state.interests);
+      setSavedIds(state.saved);
+      setHiddenIds(state.hidden);
+      setFeed(null);
+      setSaved([]);
+      setHidden([]);
+      setReading(null);
+      setSessionExpired(false);
+      setStarted(true);
+      setRevision((v) => v + 1);
+      go({ page: "Discover" }, true);
+    } catch (e) {
+      reportError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+  const rows =
+    page === "Saved" ? saved : page === "Hidden" ? hidden : feed?.items || [];
   const activeMode = feed?.fallback
     ? feed.method === "content"
       ? "Content-based fallback"
@@ -305,12 +415,19 @@ function App() {
         : modeNames[mode]
     : modeNames[mode];
   function backToList() {
-    setReaderOpen(false);
-    requestAnimationFrame(() => document.getElementById("main")?.focus());
+    if (history.state?.feedrank && history.state.readFrom) history.back();
+    else go({ page }, true);
   }
   return (
     <div className="application">
-      <a className="skip" href="#main">
+      <a
+        className="skip"
+        href="#main"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("main")?.focus();
+        }}
+      >
         Skip to content
       </a>
       <header className="app-header">
@@ -408,6 +525,12 @@ function App() {
             <div className="settings-bottom">
               <button
                 className="quiet-button"
+                onClick={() => navigate("Hidden")}
+              >
+                Hidden reads ({hiddenIds.length})
+              </button>
+              <button
+                className="quiet-button"
                 onClick={() => setResetDialog(true)}
               >
                 Reset session
@@ -425,15 +548,32 @@ function App() {
           <div role="alert" className="error">
             <span>{error}</span>
             <button
+              disabled={busy}
               onClick={() =>
-                started ? setRevision((v) => v + 1) : location.reload()
+                sessionExpired
+                  ? restartSession()
+                  : started
+                    ? setRevision((v) => v + 1)
+                    : location.reload()
               }
             >
-              Try again
+              {sessionExpired ? "Start a new session" : "Try again"}
             </button>
           </div>
         )}
-        {readerOpen && reading ? (
+        {readerOpen && reading?.item.id !== route.itemId ? (
+          <section className="read-unavailable">
+            <button className="back-link" onClick={backToList}>
+              <ArrowLeft size={15} />
+              Back to list
+            </button>
+            <p role="status">
+              {error
+                ? "This read could not be opened in your session."
+                : "Opening read…"}
+            </p>
+          </section>
+        ) : readerOpen && reading ? (
           <article
             className="full-read"
             ref={readerRef}
@@ -443,7 +583,12 @@ function App() {
             <div className="reader-toolbar">
               <button onClick={backToList}>
                 <ArrowLeft size={16} />
-                Back to {page === "Saved" ? "saved" : "feed"}
+                Back to{" "}
+                {page === "Saved"
+                  ? "saved"
+                  : page === "Hidden"
+                    ? "hidden reads"
+                    : "feed"}
               </button>
               <button
                 disabled={busy}
@@ -478,7 +623,12 @@ function App() {
             <div className="article-end">
               <span>End of demo read</span>
               <button onClick={backToList}>
-                Return to {page === "Saved" ? "saved" : "feed"}{" "}
+                Return to{" "}
+                {page === "Saved"
+                  ? "saved"
+                  : page === "Hidden"
+                    ? "hidden reads"
+                    : "feed"}{" "}
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -571,13 +721,21 @@ function App() {
           <section className="feed-page" aria-busy={loading}>
             <div className="feed-heading">
               <div>
-                <h1>{page === "Saved" ? "Saved reads" : "Your feed"}</h1>
+                <h1>
+                  {page === "Saved"
+                    ? "Saved reads"
+                    : page === "Hidden"
+                      ? "Hidden reads"
+                      : "Your feed"}
+                </h1>
                 <p>
                   {page === "Saved"
                     ? "Reads you kept for later."
-                    : interests.length
-                      ? interests.map((c) => names[c] || c).join(", ")
-                      : "All subjects"}
+                    : page === "Hidden"
+                      ? "Restore hidden reads. Already read or saved items stay out of the feed."
+                      : interests.length
+                        ? interests.map((c) => names[c] || c).join(", ")
+                        : "All subjects"}
                 </p>
               </div>
               {page === "Discover" && (
@@ -600,7 +758,17 @@ function App() {
                 </button>
               </p>
             )}
-            {(loading && !rows.length) || !started ? (
+            {page === "Discover" && mode === "popular" && (
+              <p className="model-note">
+                Demo reads have no measured audience popularity. This mode uses
+                a balanced starting order.
+              </p>
+            )}
+            {error && !rows.length ? (
+              <p className="loading">
+                Reads could not be loaded. Use the action above to continue.
+              </p>
+            ) : (loading && !rows.length) || !started ? (
               <p className="loading" role="status">
                 Loading reads…
               </p>
@@ -650,15 +818,21 @@ function App() {
                               />
                               {isSaved ? "Saved" : "Save"}
                             </button>
-                            {page === "Discover" && (
+                            {(page === "Discover" || page === "Hidden") && (
                               <button
                                 disabled={busy || loading}
                                 className="item-action"
-                                aria-label={`Hide ${item.title}`}
-                                onClick={() => event(item, "hide", rid)}
+                                aria-label={`${page === "Hidden" ? "Restore" : "Hide"} ${item.title}`}
+                                onClick={() =>
+                                  event(
+                                    item,
+                                    page === "Hidden" ? "unhide" : "hide",
+                                    rid,
+                                  )
+                                }
                               >
                                 <X size={14} />
-                                Hide
+                                {page === "Hidden" ? "Restore" : "Hide"}
                               </button>
                             )}
                           </div>
@@ -673,22 +847,28 @@ function App() {
                 <h2>
                   {page === "Saved"
                     ? "No saved reads"
-                    : "No more reads in this session"}
+                    : page === "Hidden"
+                      ? "No hidden reads"
+                      : "No more reads in this session"}
                 </h2>
                 <p>
                   {page === "Saved"
                     ? "Use Save beside a read to keep it here."
-                    : "Reset the session to browse the collection again."}
+                    : page === "Hidden"
+                      ? "Reads you hide will appear here."
+                      : "Reset the session to browse the collection again."}
                 </p>
                 <button
                   className="primary-button"
                   onClick={() =>
-                    page === "Saved"
+                    page === "Saved" || page === "Hidden"
                       ? navigate("Discover")
                       : setResetDialog(true)
                   }
                 >
-                  {page === "Saved" ? "Back to feed" : "Reset session"}
+                  {page === "Saved" || page === "Hidden"
+                    ? "Back to feed"
+                    : "Reset session"}
                 </button>
               </div>
             )}

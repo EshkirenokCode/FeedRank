@@ -50,7 +50,7 @@ with tempfile.TemporaryDirectory(prefix="feedrank-smoke-") as directory:
     )
     shutil.copyfile(root / "reports/protocol.md", d / "reports/protocol.md")
     (d / "reports/data-manifest.json").write_text(json.dumps({"dataset": "synthetic smoke only"}))
-    env = os.environ | {"FEEDRANK_ROOT": str(d)}
+    env = os.environ | {"FEEDRANK_ROOT": str(d), "PYTHONPATH": str(root)}
     subprocess.run([sys.executable, "-m", "feedrank.train"], check=True, cwd=root, env=env)
     checksum = hashlib.sha256((d / "artifacts/encoder.pt").read_bytes()).hexdigest()
     subprocess.run([sys.executable, "-m", "feedrank.train"], check=True, cwd=root, env=env)

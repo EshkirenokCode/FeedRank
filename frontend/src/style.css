@@ -758,3 +758,15 @@ th:first-child {
     scroll-behavior: auto !important;
   }
 }
+.settings-bottom {
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.read-unavailable {
+  padding: 10px 0 40px;
+}
+.read-unavailable > p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+}

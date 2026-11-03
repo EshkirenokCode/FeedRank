@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-01",
+  "date": "2026-11-04",
   "origin": "http://127.0.0.1:8080",
   "mode": "explicit demo fallback, research release absent",
   "desktop_viewport": [
@@ -23,12 +23,21 @@
     "empty saved list returns to feed",
     "research document link opens at top with main focus",
     "explicit content fallback retained",
-    "no browser console warnings or errors"
+    "no browser console warnings or errors",
+    "article hash route survives reload and browser Back/Forward",
+    "selected method retained after reload",
+    "unread item returns after Save and Undo",
+    "Hidden list survives reload; restore works on desktop/mobile",
+    "invalid read link gives a recoverable error and Back to list",
+    "local Swagger Try it out POST returns 200 with no CSP errors",
+    "Popular explicitly describes missing demo audience popularity"
   ],
   "sessions": "QA sessions, excluded from any visitor statistics",
   "limitations": [
     "Research model still absent; learned-mode QA requires the MIND release",
     "Public HTTPS not deployed"
   ],
-  "interface": "single reading feed; standalone article view on every screen; grouped settings; secondary research document"
+  "interface": "single reading feed; standalone article view on every screen; grouped settings; secondary research document",
+  "console": "No unexpected errors during positive scenarios; expected 404 exercised for missing read.",
+  "session_expiry": "API regression only; no live visitor session expired for browser testing"
 }

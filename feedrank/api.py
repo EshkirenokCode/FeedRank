@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -82,11 +83,14 @@ def create_app(db_path=None, artifacts=None):
         app.state.rate = {}
         yield
 
-    app = FastAPI(title="FeedRank", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(
+        title="FeedRank", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None
+    )
 
     @app.middleware("http")
     async def guard(request, call_next):
         started = time.perf_counter()
+        request.state.docs_nonce = secrets.token_urlsafe(18)
         if len(await request.body()) > 8192:
             return JSONResponse({"detail": "Request too large"}, 413)
         if request.method in ("POST", "PUT", "DELETE"):
@@ -122,6 +126,12 @@ def create_app(db_path=None, artifacts=None):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
         )
+        if request.url.path == "/docs":
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; style-src 'self' 'unsafe-inline'; "
+                f"script-src 'self' 'nonce-{request.state.docs_nonce}'; "
+                "img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+            )
         counters = request.app.state.counters
         counters["requests"] += 1
         counters["errors"] += response.status_code >= 400
@@ -220,10 +230,16 @@ def create_app(db_path=None, artifacts=None):
                     ),
                 )
             con.execute("UPDATE sessions SET updated=? WHERE token=?", (time.time(), row["token"]))
-            # Keep a bounded recommendation history; existing saved actions retain a valid association.
+            # Keep recent impressions for retries and one durable association per item
+            # so saved/hidden/read views survive refresh without an unbounded served log.
             con.execute(
-                "DELETE FROM served WHERE token=? AND created<? AND item NOT IN (SELECT value FROM json_each(?))",
-                (row["token"], time.time() - 86400, row["saved"]),
+                """DELETE FROM served WHERE token=?
+                AND recommendation NOT IN (
+                    SELECT recommendation FROM served WHERE token=?
+                    GROUP BY recommendation ORDER BY max(created) DESC LIMIT 200)
+                AND rowid NOT IN (
+                    SELECT max(rowid) FROM served WHERE token=? GROUP BY item)""",
+                (row["token"], row["token"], row["token"]),
             )
         app.state.counters["fallback"] += result["fallback"] is not None
         app.state.counters["empty"] += not result["items"]
@@ -268,6 +284,12 @@ def create_app(db_path=None, artifacts=None):
                 hidden.append(body.item_id)
             if body.event_type == "unsave":
                 saved = [i for i in saved if i != body.item_id]
+                opened = con.execute(
+                    "SELECT 1 FROM events WHERE token=? AND item=? AND event_type='open' LIMIT 1",
+                    (row["token"], body.item_id),
+                ).fetchone()
+                if not opened:
+                    history = [i for i in history if i != body.item_id]
             if body.event_type == "unhide":
                 hidden = [i for i in hidden if i != body.item_id]
             con.execute(
@@ -298,22 +320,65 @@ def create_app(db_path=None, artifacts=None):
             )
         return {"accepted": True, "duplicate": False}
 
-    @app.get("/api/saved")
-    def saved(request: Request):
+    def item_for_session(con, token, item_id):
+        served = con.execute(
+            "SELECT recommendation FROM served WHERE token=? AND item=? ORDER BY rowid DESC LIMIT 1",
+            (token, item_id),
+        ).fetchone()
+        if not served and item_id in app.state.service.index:
+            # Legacy pruning removed some hidden impressions; accepted events still
+            # contain their original server-verified provenance.
+            event = con.execute(
+                "SELECT * FROM events WHERE token=? AND item=? ORDER BY rowid DESC LIMIT 1",
+                (token, item_id),
+            ).fetchone()
+            if event:
+                con.execute(
+                    "INSERT OR IGNORE INTO served VALUES(?,?,?,?,?,?,?,?)",
+                    (
+                        event["recommendation"],
+                        token,
+                        item_id,
+                        event["position"],
+                        event["mode"],
+                        event["model"],
+                        event["policy"],
+                        event["created"],
+                    ),
+                )
+                served = {"recommendation": event["recommendation"]}
+        if item_id not in app.state.service.index or not served:
+            raise HTTPException(404, "Read is not available in this session")
+        return app.state.service.items[app.state.service.index[item_id]] | {
+            "recommendation_id": served["recommendation"]
+        }
+
+    @app.get("/api/items/{item_id}")
+    def read_item(item_id: str, request: Request):
         with db() as con:
             row = session(request, con)
-            items = []
-            for i in json.loads(row["saved"]):
-                served = con.execute(
-                    "SELECT recommendation FROM served WHERE token=? AND item=? ORDER BY created DESC LIMIT 1",
-                    (row["token"], i),
-                ).fetchone()
-                if i in app.state.service.index and served:
-                    items.append(
-                        app.state.service.items[app.state.service.index[i]]
-                        | {"recommendation_id": served[0]}
-                    )
-        return {"items": items}
+            return item_for_session(con, row["token"], item_id)
+
+    def session_collection(request, field):
+        with db() as con:
+            row = session(request, con)
+            items, unavailable = [], 0
+            for item_id in reversed(json.loads(row[field])):
+                try:
+                    items.append(item_for_session(con, row["token"], item_id))
+                except HTTPException as exc:
+                    if exc.status_code != 404:
+                        raise
+                    unavailable += 1
+            return {"items": items, "unavailable_count": unavailable}
+
+    @app.get("/api/saved")
+    def saved(request: Request):
+        return session_collection(request, "saved")
+
+    @app.get("/api/hidden")
+    def hidden(request: Request):
+        return session_collection(request, "hidden")
 
     @app.delete("/api/session/history")
     def reset(request: Request):
@@ -374,9 +439,36 @@ def create_app(db_path=None, artifacts=None):
         # Operational counts only: no session IDs, IP addresses or visitor analytics.
         return app.state.counters | {"model_version": app.state.service.version}
 
+    @app.get("/docs", include_in_schema=False)
+    def api_docs(request: Request):
+        html = get_swagger_ui_html(
+            openapi_url="/openapi.json",
+            title="FeedRank API",
+            swagger_js_url="/api-docs/swagger-ui-bundle.js",
+            swagger_css_url="/api-docs/swagger-ui.css",
+            swagger_favicon_url="data:,",
+            swagger_ui_parameters={"persistAuthorization": False, "validatorUrl": None},
+        )
+        content = (
+            html.body.decode()
+            .replace(
+                "const ui = SwaggerUIBundle({",
+                """const ui = SwaggerUIBundle({
+              requestInterceptor: (request) => {
+                request.headers['X-FeedRank'] = '1';
+                if (new URLSearchParams(location.search).has('qa')) request.headers['X-FeedRank-QA'] = '1';
+                return request;
+              },""",
+            )
+            .replace("<script>", f'<script nonce="{request.state.docs_nonce}">')
+        )
+        return HTMLResponse(content)
+
     dist = ROOT / "frontend/dist"
     if dist.exists():
         app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+        if (dist / "api-docs").exists():
+            app.mount("/api-docs", StaticFiles(directory=dist / "api-docs"), name="api-docs")
 
         @app.get("/")
         def index():

@@ -8,23 +8,26 @@
   "warmup": 20,
   "mode": "explicit-demo-fallback",
   "content_and_user_features": {
-    "p50_ms": 0.06179092451930046,
-    "p95_ms": 0.06676873308606446,
+    "p50_ms": 0.059832935221493244,
+    "p95_ms": 0.06625413661822677,
     "measurements": 300
   },
   "serving_without_storage": {
-    "p50_ms": 0.08687505032867193,
-    "p95_ms": 0.09226659894920886,
+    "p50_ms": 0.08631247328594327,
+    "p95_ms": 0.09062502067536116,
     "measurements": 300
   },
   "research_stages": "Unavailable until a measured research release is installed.",
   "http": {
-    "p50_ms": 1.6022494528442621,
-    "p95_ms": 2.05627644318156,
+    "p50_ms": 20.027479040436447,
+    "p95_ms": 22.85972951212898,
     "measurements": 300,
+    "target": "http://127.0.0.1:8080",
+    "pacing_seconds": 0.11,
     "transport": "localhost TCP; one client; includes SQLite served logging",
     "history_length": 0,
     "warmup_per_session": 7
   },
-  "process_rss_bytes": 282394624
+  "process_rss_bytes": 282394624,
+  "rss_scope": "Benchmark runner including local Service; not the API worker."
 }

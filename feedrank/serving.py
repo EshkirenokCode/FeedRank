@@ -1,4 +1,5 @@
 import json
+import pickle
 import time
 from pathlib import Path
 
@@ -29,6 +30,7 @@ class Service:
         manifest_path = self.artifacts / "release.json"
         if not manifest_path.exists():
             return
+        fallback_state = self.tf, self.text, self.prior, self.pop
         try:
             manifest = json.loads(manifest_path.read_text())
             required = {
@@ -74,11 +76,29 @@ class Service:
             self.tf.fit([" ".join(self.prep.vocab)])
             self.tf.idf_ = np.array(baseline["idf"])
             self.text = self.tf.transform([x["title"] + " " + x["abstract"] for x in self.items])
-            self.prior = baseline["prior"]
+            if not np.isfinite(self.tf.idf_).all() or np.any(self.tf.idf_ <= 0):
+                raise ValueError("Invalid TF-IDF normalization")
+            self.prior = float(baseline["prior"])
+            if not np.isfinite(self.prior) or not 0 < self.prior < 1:
+                raise ValueError("Invalid popularity prior")
             self.pop = np.full(len(self.items), self.prior)
             self.version, self.selected = manifest["model_version"], manifest["selected"]
             self.ready, self.reason = True, None
-        except (OSError, ValueError, KeyError, RuntimeError, TypeError, AttributeError) as exc:
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            RuntimeError,
+            TypeError,
+            AttributeError,
+            pickle.UnpicklingError,
+            EOFError,
+            IndexError,
+        ) as exc:
+            self.tf, self.text, self.prior, self.pop = fallback_state
+            for field in ("model", "prep", "vectors", "ranker"):
+                if hasattr(self, field):
+                    delattr(self, field)
             self.reason = f"Research release could not be loaded ({type(exc).__name__}). Demo fallback is active."
 
     def features(self, history, interests):
@@ -153,7 +173,7 @@ class Service:
             method, fallback = "content", self.reason
         elif mode == "personalized" and not history and not interests:
             method, fallback = "popular", "No history yet. A balanced catalog starts your session."
-        if mode == "personalized" and self.ready and method == "popular":
+        if mode == "personalized" and self.ready and self.selected == "popular" and not fallback:
             fallback = (
                 "Popularity was selected on validation. This mode currently uses that baseline."
             )
@@ -174,7 +194,7 @@ class Service:
         result = []
         for i in order[:limit]:
             reason = "Balanced demo selection"
-            if self.items[i]["category"] in interests:
+            if method != "popular" and self.items[i]["category"] in interests:
                 reason = "Matches a selected interest"
             elif history and method in ("content", "tower", "ranker"):
                 reason = "Based on your reading history"

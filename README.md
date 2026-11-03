@@ -13,7 +13,11 @@ not run yet. No MIND quality numbers are claimed. See [evaluation status](report
 The interface uses a single reading feed on every screen size. Articles open in a
 separate reading view, with a return to the feed or saved list. Recommendation mode,
 interests and session reset are grouped in Settings. The evaluation explanation is
-available through the link below the feed.
+available through the link below the feed. Settings also includes a persistent hidden
+reads list. Article/list addresses survive reload and browser Back/Forward within the
+owning session; opening a read link in another session does not grant access to it.
+The selected method is kept for the browser session. Unsave returns an unread item
+to eligibility; previously opened items remain in reading history.
 
 ## Run locally
 
@@ -26,7 +30,8 @@ make install web serve
 ```
 
 Open http://127.0.0.1:8000. The API documentation is at `/docs`; `/health` checks the
-process and `/ready` checks the research release. Missing artifacts intentionally
+process and `/ready` checks the research release. Swagger assets are served locally and interactive requests include the same-origin
+header. Missing artifacts intentionally
 return 503 at `/ready` while the clearly labelled demo fallback remains usable.
 
 ```sh
@@ -101,8 +106,11 @@ SQLite and the rate limiter target a small, single-process demo, not a large ser
 ```sh
 make test smoke web
 python scripts/http_smoke.py
-python scripts/benchmark.py
+python scripts/benchmark.py http://127.0.0.1:8000
 ```
+
+For Docker, benchmark the local proxy at `http://127.0.0.1:8080` (the default).
+The script paces requests below its limit and accepts loopback targets only.
 
 The smoke run trains twice on a disposable synthetic fixture, checks reproducibility,
 loads the trained release into the API and verifies changed user features. It never
@@ -111,6 +119,7 @@ serialization, masked padding, novel content, temporal groups, session isolation
 concurrent event retries, reset and corrupt artifacts. CI also builds the container
 and runs an HTTP smoke without downloading MIND.
 
+- [Application audit and fixes](reports/application-audit.md)
 - [Engineering decisions](reports/decisions.md)
 - [Deployment and rollback](deploy/README.md)
 - [Portfolio text and video script](reports/portfolio.md)

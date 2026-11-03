@@ -4,7 +4,7 @@
   "readiness": "503: research release absent, explicit fallback",
   "public_https": "not deployed",
   "platform": "Linux arm64 in isolated Colima feedrank profile",
-  "image": "sha256:b32879fd436780d6a2709ccae0fb895dd35a6a6a52cf4c3f1c2694c3d18ace56",
+  "image": "sha256:4348c3814cc333b879562bc4017f7d7fdbf0a3316b4475d8d79f4f4707498e86",
   "user": "10001",
   "read_only_root": true,
   "memory_limit_bytes": 1073741824,

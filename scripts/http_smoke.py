@@ -24,3 +24,8 @@ with httpx.Client(base_url=base, headers={"X-FeedRank": "1", "X-FeedRank-QA": "1
     assert c.delete("/api/session/history").status_code == 200
     assert not c.get("/api/saved").json()["items"]
     print("HTTP smoke passed; model ready:", feed["research_ready"])
+    docs = c.get("/docs")
+    docs.raise_for_status()
+    assert "nonce-" in docs.headers["content-security-policy"]
+    c.get("/api-docs/swagger-ui-bundle.js").raise_for_status()
+    c.get("/api-docs/swagger-ui.css").raise_for_status()
