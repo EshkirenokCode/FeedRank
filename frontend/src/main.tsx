@@ -437,14 +437,14 @@ function App() {
             aria-label="FeedRank home"
             onClick={() => navigate("Discover")}
           >
-            FeedRank
+            Feed<span className="brand-rank">Rank</span>
           </button>
           <nav aria-label="Main navigation">
             <button
               aria-current={page === "Discover" ? "page" : undefined}
               onClick={() => navigate("Discover")}
             >
-              Feed
+              Reading list
             </button>
             <button
               aria-current={page === "Saved" ? "page" : undefined}
@@ -726,7 +726,7 @@ function App() {
                     ? "Saved reads"
                     : page === "Hidden"
                       ? "Hidden reads"
-                      : "Your feed"}
+                      : "Reading list"}
                 </h1>
                 <p>
                   {page === "Saved"
@@ -752,9 +752,9 @@ function App() {
               <p className="model-note">
                 {feed.research_ready
                   ? feed.fallback
-                  : "Research model unavailable; content matching is active."}
+                  : "Demo edition. Recommendations currently use content matching."}
                 <button onClick={() => navigate("Evaluation")}>
-                  About this
+                  How it works
                 </button>
               </p>
             )}
@@ -774,16 +774,19 @@ function App() {
               </p>
             ) : rows.length ? (
               <div className="feed-list">
-                {rows.map((item) => {
+                {rows.map((item, index) => {
                   const rid =
                     item.recommendation_id || feed?.recommendation_id || "";
                   const isSaved = savedIds.includes(item.id);
                   return (
                     <article className="feed-item" key={item.id}>
-                      <div className="item-category">
-                        {names[item.category] || item.category}
+                      <div className="item-index" aria-hidden="true">
+                        {String(index + 1).padStart(2, "0")}
                       </div>
                       <div className="item-main">
+                        <div className="item-category">
+                          {names[item.category] || item.category}
+                        </div>
                         <h2>
                           <button
                             disabled={busy || loading}
@@ -799,7 +802,7 @@ function App() {
                               ? "Matches your interests"
                               : item.reason === "Based on your reading history"
                                 ? "From your reading history"
-                                : "Demo collection"}
+                                : ""}
                           </span>
                           <div>
                             <button
@@ -886,7 +889,7 @@ function App() {
           >
             GitHub
           </a>
-          <span className="footer-description">Original demo content</span>
+          <span className="footer-description">48 original summaries</span>
         </footer>
       </main>
       {toast && (

@@ -1,11 +1,11 @@
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #26282c;
-  background: #fff;
+  color: #262820;
+  background: #f7f7f2;
   font-synthesis: none;
-  --muted: #666b73;
-  --line: #e7e8eb;
-  --blue: #1b5dab;
+  --muted: #66685c;
+  --line: #d9dbce;
+  --blue: #465c2d;
 }
 * {
   box-sizing: border-box;
@@ -46,7 +46,7 @@ svg {
   position: fixed;
   top: -60px;
   left: 20px;
-  background: #fff;
+  background: #f7f7f2;
   border: 1px solid var(--line);
   padding: 10px;
   z-index: 99;
@@ -56,7 +56,7 @@ svg {
 }
 .app-header {
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: #f7f7f2;
 }
 .header-content {
   max-width: 1020px;
@@ -351,7 +351,7 @@ svg {
 .primary-button {
   border: 1px solid #b9c5d5;
   border-radius: 4px;
-  background: #fff;
+  background: #f7f7f2;
   color: #344b6b;
   font-size: 12px;
   padding: 7px 15px;
@@ -769,4 +769,286 @@ th:first-child {
   font-size: 14px;
   color: var(--muted);
   line-height: 1.8;
+}
+
+/* Reading list: a numbered index with a separate control column. */
+.header-content {
+  max-width: 1180px;
+  height: 100px;
+  padding: 0 40px;
+  gap: 70px;
+}
+.app-header {
+  border-bottom: 2px solid #303629;
+}
+.brand {
+  font-family: Georgia, serif;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -1.8px;
+}
+.brand-rank {
+  font-style: italic;
+}
+.header-content nav > button {
+  font-size: 14px;
+  color: #555c4b;
+}
+.header-content nav > button[aria-current="page"]:after {
+  background: #465c2d;
+  height: 3px;
+}
+.settings-button {
+  font-size: 13px;
+  color: #4e5843;
+}
+.content {
+  max-width: 1100px;
+  padding: 48px 40px 28px;
+}
+.feed-heading {
+  align-items: flex-end;
+  margin-bottom: 26px;
+}
+.feed-heading h1 {
+  font-family: Georgia, serif;
+  font-size: 52px;
+  font-weight: 400;
+  letter-spacing: -1.9px;
+  margin-bottom: 12px;
+}
+.feed-heading p {
+  font-size: 14px;
+  color: #626756;
+}
+.feed-method {
+  font-size: 13px;
+  color: #465c2d;
+  border-bottom: 1px solid #88947c;
+  padding: 10px 0;
+}
+.model-note {
+  font-size: 12px;
+  color: #626756;
+  padding-bottom: 24px;
+}
+.model-note button {
+  color: #465c2d;
+}
+.feed-item {
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 22px;
+  padding: 32px 0;
+}
+.item-index {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  color: #8b927e;
+  padding-top: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.item-main {
+  position: relative;
+  padding-right: 155px;
+}
+.item-category {
+  color: #576648;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.item-main h2 {
+  font-family: Georgia, serif;
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: -0.55px;
+  line-height: 1.23;
+  max-width: 650px;
+  margin-bottom: 12px;
+}
+.item-main > p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #66695f;
+  max-width: 620px;
+  margin-bottom: 0;
+}
+.item-bottom > span {
+  display: block;
+  font-size: 11px;
+  color: #647451;
+  margin-top: 12px;
+}
+.item-bottom > span:empty {
+  display: none;
+}
+.item-bottom > div {
+  position: absolute;
+  top: 31px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 98px;
+}
+.item-action {
+  color: #59644d;
+  font-size: 12px;
+  min-height: 36px;
+  gap: 9px;
+}
+.item-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.feed-item:first-child h2 {
+  font-size: 34px;
+}
+.settings {
+  background: #edf0e5;
+  border: 0;
+  border-left: 3px solid #65774e;
+  border-radius: 0;
+  padding: 26px;
+}
+.settings select,
+.primary-button {
+  border-radius: 0;
+}
+.settings-fields p,
+.interest-options label {
+  font-size: 12px;
+}
+.interest-options input {
+  accent-color: #465c2d;
+}
+.app-footer {
+  font-size: 12px;
+  margin-top: 34px;
+}
+.reading-content {
+  max-width: 820px;
+}
+.article-heading h1 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 46px;
+  letter-spacing: -1.3px;
+}
+.article-heading > p {
+  color: #65695c;
+}
+.article-body p {
+  color: #32372a;
+  line-height: 1.85;
+}
+.reader-toolbar button,
+.article-end button {
+  color: #465c2d;
+  min-height: 36px;
+}
+.research-page {
+  max-width: 720px;
+}
+.research-page h1 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 40px;
+}
+.toast {
+  border-radius: 0;
+  background: #303b27;
+  box-shadow: none;
+}
+.reset-dialog {
+  border-radius: 0;
+}
+@media (max-width: 700px) {
+  .header-content {
+    height: 78px;
+    padding: 0 22px;
+    gap: 28px;
+  }
+  .brand {
+    font-size: 28px;
+  }
+  .header-content nav {
+    gap: 18px;
+  }
+  .header-content nav > button {
+    font-size: 12px;
+  }
+  .settings-button > span {
+    display: none;
+  }
+  .content {
+    padding: 32px 22px 20px;
+  }
+  .feed-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .feed-heading h1 {
+    font-size: 42px;
+  }
+  .feed-heading p {
+    font-size: 13px;
+  }
+  .feed-method {
+    max-width: none;
+    font-size: 12px;
+  }
+  .feed-item {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 12px;
+    padding: 26px 0;
+  }
+  .item-index {
+    font-size: 19px;
+    padding-top: 27px;
+  }
+  .item-main {
+    padding-right: 0;
+  }
+  .item-main h2,
+  .feed-item:first-child h2 {
+    font-size: 25px;
+    line-height: 1.25;
+  }
+  .item-category {
+    font-size: 10px;
+  }
+  .item-main > p {
+    font-size: 14px;
+  }
+  .item-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .item-bottom > div {
+    position: static;
+    flex-direction: row;
+    width: auto;
+    gap: 24px;
+    margin-top: 9px;
+  }
+  .item-bottom > span {
+    max-width: none;
+    font-size: 11px;
+  }
+  .item-action {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .article-heading h1 {
+    font-size: 35px;
+  }
+  .app-footer {
+    font-size: 11px;
+  }
 }
